@@ -17,8 +17,8 @@ class _LoginPageState extends State<LoginPage> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Get started -> navigate to permission or home
-      Navigator.pushReplacementNamed(context, '/permissions');
+      // Get started -> navigate to login form (auth)
+      Navigator.pushReplacementNamed(context, '/auth');
     }
   }
 
@@ -39,58 +39,51 @@ class _LoginPageState extends State<LoginPage> {
                     subtitle:
                         'Get all your loved foods in one place, you just place the order we do the rest',
                     buttonText: 'NEXT',
+                    buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     image: Container(color: Colors.blueGrey[200]),
+                    pageIndex: 0,
+                    activeIndex: _index,
                   ),
                   OnboardingCard(
                     title: 'All your favorites',
                     subtitle:
                         'Get all your loved foods in one place, you just place the order we do the rest',
                     buttonText: 'NEXT',
+                    buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     image: Container(color: Colors.blueGrey[200]),
+                    pageIndex: 1,
+                    activeIndex: _index,
                   ),
                   OnboardingCard(
                     title: 'Order from chosen chef',
                     subtitle:
                         'Get all your loved foods in one place, you just place the order we do the rest',
                     buttonText: 'NEXT',
+                    buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     image: Container(color: Colors.blueGrey[200]),
+                    pageIndex: 2,
+                    activeIndex: _index,
                   ),
                   OnboardingCard(
                     title: 'Free delivery offers',
                     subtitle:
                         'Get all your loved foods in one place, you just place the order we do the rest',
                     buttonText: 'GET STARTED',
+                    buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     image: Container(color: Colors.blueGrey[200]),
+                    pageIndex: 3,
+                    activeIndex: _index,
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 18.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (i) => _buildDot(i == _index)),
-              ),
-            ),
+            Padding(padding: const EdgeInsets.only(bottom: 18.0)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDot(bool active) {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 250),
-      margin: EdgeInsets.symmetric(horizontal: 6),
-      width: active ? 18 : 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: active ? Colors.orange : Colors.orange.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
       ),
     );
   }

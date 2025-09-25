@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_page_user/permission_page.dart';
 import 'login_page_user/login_page.dart';
+import 'login_page_user/login_form.dart';
 import 'splash/splash_page.dart';
 
 void main() {
@@ -17,13 +18,10 @@ class FoodDeliveryApp extends StatelessWidget {
       routes: {
         '/splash': (_) => SplashPage(),
         '/login': (_) => LoginPage(),
-        // '/permissions': (_) => PermissionPage(),
+        '/permissions': (_) => PermissionPage(),
+        '/auth': (_) => LoginFormPage(),
       },
       debugShowCheckedModeBanner: false,
     );
   }
 }
-
-
-
-

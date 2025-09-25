@@ -33,14 +33,7 @@ app.use(express.json());
 app.use("/api/foods", foodRoute);
 app.use("/api/auth", loginRoute);
 
-// Hello World route
-app.get("/", (req, res) => {
-  res.json({
-    message: "Hello World from Food Delivery Backend!",
-    status: "success",
-    timestamp: new Date().toISOString(),
-  });
-});
+
 
 
 // Start server
