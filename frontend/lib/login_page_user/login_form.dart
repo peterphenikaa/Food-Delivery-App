@@ -60,169 +60,171 @@ class _LoginFormPageState extends State<LoginFormPage> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // top card / header
-              Container(
-                height: 180,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Log In',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Please sign in to your existing account',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
+      body: Column(
+        children: [
+          // top card / header
+          SafeArea(
+            child: Container(
+              height: 180,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
                 ),
               ),
-              // form card
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Log In',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Please sign in to your existing account',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // form card - chiếm toàn bộ phần còn lại
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: 8),
+                    Text('EMAIL', style: theme.textTheme.labelSmall),
+                    SizedBox(height: 8),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: 'example@gmail.com',
+                        filled: true,
+                        fillColor: Color(0xFFF3F7FB),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text('PASSWORD', style: theme.textTheme.labelSmall),
+                    SizedBox(height: 8),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        hintText: '**********',
+                        filled: true,
+                        fillColor: Color(0xFFF3F7FB),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: Icon(Icons.remove_red_eye_outlined),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(height: 8),
-                        Text('EMAIL', style: theme.textTheme.labelSmall),
-                        SizedBox(height: 8),
-                        TextField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            hintText: 'example@gmail.com',
-                            filled: true,
-                            fillColor: Color(0xFFF3F7FB),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        Text('PASSWORD', style: theme.textTheme.labelSmall),
-                        SizedBox(height: 8),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            hintText: '**********',
-                            filled: true,
-                            fillColor: Color(0xFFF3F7FB),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: Icon(Icons.remove_red_eye_outlined),
-                          ),
-                        ),
-                        SizedBox(height: 12),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _remember,
-                                  onChanged: (v) =>
-                                      setState(() => _remember = v ?? false),
-                                ),
-                                Text('Remember me'),
-                              ],
+                            Checkbox(
+                              value: _remember,
+                              onChanged: (v) =>
+                                  setState(() => _remember = v ?? false),
                             ),
-                            TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                'Forgot Password',
-                                style: TextStyle(color: Colors.orange),
-                              ),
-                            ),
+                            Text('Remember me'),
                           ],
                         ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: _loading ? null : _login,
-                          child: _loading
-                              ? CircularProgressIndicator(color: Colors.white)
-                              : Text('LOG IN'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            padding: EdgeInsets.symmetric(vertical: 16),
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'Forgot Password',
+                            style: TextStyle(color: Colors.orange),
                           ),
-                        ),
-                        SizedBox(height: 16),
-                        Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Don't have an account? ",
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.pushNamed(context, '/register');
-                                },
-                                child: Text(
-                                  'SIGN UP',
-                                  style: TextStyle(
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Center(child: Text('Or')),
-                        SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _socialCircle(Icons.facebook, Colors.blue[900]!),
-                            SizedBox(width: 12),
-                            _socialCircle(
-                              Icons.alternate_email,
-                              Colors.lightBlue,
-                            ),
-                            SizedBox(width: 12),
-                            _socialCircle(Icons.apple, Colors.black87),
-                          ],
                         ),
                       ],
                     ),
-                  ),
+                    SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _loading ? null : _login,
+                      child: _loading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text('LOG IN'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account? ",
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/register');
+                            },
+                            child: Text(
+                              'SIGN UP',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Center(child: Text('Or')),
+                    SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _socialCircle(Icons.facebook, Colors.blue[900]!),
+                        SizedBox(width: 12),
+                        _socialCircle(
+                          Icons.alternate_email,
+                          Colors.lightBlue,
+                        ),
+                        SizedBox(width: 12),
+                        _socialCircle(Icons.apple, Colors.black87),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
