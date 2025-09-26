@@ -32,14 +32,6 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
     final ward = _wardController.text.trim();
     final city = _cityController.text.trim();
 
-    print('📝 Form data:');
-    print('Name: "$name"');
-    print('Email: "$email"');
-    print('Password length: ${password.length}');
-    print('House: "$houseNumber"');
-    print('Ward: "$ward"');
-    print('City: "$city"');
-
     // Validation
     if (name.isEmpty || email.isEmpty || password.isEmpty || houseNumber.isEmpty || ward.isEmpty || city.isEmpty) {
       print('❌ Validation failed - empty fields');
