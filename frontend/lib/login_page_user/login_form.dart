@@ -39,7 +39,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Welcome ${body['user']['name'] ?? ''}')),
         );
-        // TODO: navigate to app main/home
+        Navigator.pushReplacementNamed(context, '/permissions');
       } else {
         final body = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -211,10 +211,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                       children: [
                         _socialCircle(Icons.facebook, Colors.blue[900]!),
                         SizedBox(width: 12),
-                        _socialCircle(
-                          Icons.alternate_email,
-                          Colors.lightBlue,
-                        ),
+                        _socialCircle(Icons.alternate_email, Colors.lightBlue),
                         SizedBox(width: 12),
                         _socialCircle(Icons.apple, Colors.black87),
                       ],

@@ -1,21 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'home_pages.dart';
 
-class PermissionPage extends StatelessWidget {
-  Future<void> _requestPermissions(BuildContext context) async {
-    var location = await Permission.location.request();
-    var notif = await Permission.notification.request();
+class PermissionPage extends StatefulWidget {
+  @override
+  _PermissionPageState createState() => _PermissionPageState();
+}
 
-    if (location.isGranted && notif.isGranted) {
+class _PermissionPageState extends State<PermissionPage> {
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLocation());
+  }
+
+  Future<void> _ensureLocation() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      var status = await Permission.location.status;
+      if (status.isDenied) {
+        status = await Permission.location.request();
+      }
+
+      if (status.isPermanentlyDenied) {
+        setState(() {
+          _error = 'Permission permanently denied. Please enable in settings.';
+          _loading = false;
+        });
+        return;
+      }
+
+      if (!status.isGranted) {
+        setState(() {
+          _error = 'Location permission denied';
+          _loading = false;
+        });
+        return;
+      }
+
+      if (!kIsWeb) {
+        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          setState(() {
+            _error = 'Location services are disabled. Please enable GPS.';
+            _loading = false;
+          });
+          return;
+        }
+      }
+
+      await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _loading = false;
+      });
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Bạn cần cấp quyền để tiếp tục")));
+    } catch (e) {
+      final message = e.toString();
+      final userMessage = message.contains('MissingPluginException')
+          ? 'Location plugin not registered. Try a full rebuild (flutter clean && flutter run).'
+          : 'Could not get location: $e';
+      setState(() {
+        _error = userMessage;
+        _loading = false;
+      });
     }
   }
 
@@ -36,19 +99,20 @@ class PermissionPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Colors.grey[100],
                 ),
-                child: Image.asset(
-                  'assets/login/login_img1.jpg',
-                  fit: BoxFit.cover,
+                child: Icon(
+                  Icons.location_on,
+                  size: 64,
+                  color: Colors.grey[400],
                 ),
               ),
               SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _requestPermissions(context),
+                  onPressed: _ensureLocation,
                   icon: Icon(Icons.location_on, color: Colors.white),
                   label: Text(
-                    "CẤP QUYỀN VỊ TRÍ",
+                    _loading ? 'LOADING...' : 'ACCESS LOCATION',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -64,15 +128,23 @@ class PermissionPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 14),
-              Text(
-                "NHÀ HÀNG SẼ TRUY CẬP VỊ TRÍ CỦA BẠN\nCHỈ KHI BẠN SỬ DỤNG ỨNG DỤNG",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[700],
-                  fontWeight: FontWeight.w500,
+              if (_error != null) ...[
+                Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red),
                 ),
-              ),
+              ] else ...[
+                Text(
+                  "DFOOD WILL ACCESS YOUR LOCATION ONLY WHILE USING THE APP",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
