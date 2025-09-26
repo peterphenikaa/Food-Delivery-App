@@ -177,9 +177,26 @@ class _LoginFormPageState extends State<LoginFormPage> {
                         ),
                         SizedBox(height: 16),
                         Center(
-                          child: Text(
-                            "Don't have an account? ",
-                            style: theme.textTheme.bodyMedium,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/register');
+                                },
+                                child: Text(
+                                  'SIGN UP',
+                                  style: TextStyle(
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         SizedBox(height: 8),
