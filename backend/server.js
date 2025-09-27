@@ -6,6 +6,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const foodRoute = require("./routes/foodRoute");
 const loginRoute = require("./routes/login");
+const locationRoute = require("./routes/location");
+const { connectRedis } = require("./redisClient");
 
 // Read connection values from environment (see .env or .env.example)
 const MONGO_URL =
@@ -18,7 +20,6 @@ mongoose
     useNewUrlParser: true,
     // useNewUrlParser: true buộc nó dùng parser mới và ổn định hơn
     useUnifiedTopology: true,
-
   })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Failed to connect to MongoDB", err));
@@ -32,14 +33,15 @@ app.use(express.json());
 
 app.use("/api/foods", foodRoute);
 app.use("/api/auth", loginRoute);
-
-
-
+app.use("/api/location", locationRoute);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-  console.log(`📱 Try: curl http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
+  // Connect to Redis (best-effort)
+  connectRedis().catch((err) =>
+    console.error("Failed to connect to Redis", err)
+  );
 });
 
 module.exports = app;

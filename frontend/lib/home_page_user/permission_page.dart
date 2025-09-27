@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'home_pages.dart';
 
@@ -58,9 +60,67 @@ class _PermissionPageState extends State<PermissionPage> {
         }
       }
 
-      await Geolocator.getCurrentPosition(
+      final Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      // Try to send position to backend /api/location (best-effort)
+      try {
+        final payload = jsonEncode({
+          'userId': 'anonymous', // replace with real user id if available
+          'lat': pos.latitude,
+          'lng': pos.longitude,
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        });
+
+        final uriLocal = Uri.parse('http://localhost:3000/api/location');
+        final uriEmu = Uri.parse('http://10.0.2.2:3000/api/location');
+
+        try {
+          final r = await http
+              .post(
+                uriLocal,
+                headers: {'Content-Type': 'application/json'},
+                body: payload,
+              )
+              .timeout(Duration(seconds: 8));
+          if (!(r.statusCode >= 200 && r.statusCode < 300)) {
+            setState(() {
+              _error =
+                  'Could not send location to server (status ${r.statusCode})';
+            });
+          }
+        } catch (_) {
+          // try emulator host (Android emulator)
+          try {
+            final r2 = await http
+                .post(
+                  uriEmu,
+                  headers: {'Content-Type': 'application/json'},
+                  body: payload,
+                )
+                .timeout(Duration(seconds: 8));
+            if (!(r2.statusCode >= 200 && r2.statusCode < 300)) {
+              setState(() {
+                _error =
+                    'Could not send location to server (status ${r2.statusCode})';
+              });
+            }
+          } catch (err2) {
+            // neither host worked
+            print('Failed to send location to localhost and emulator: $err2');
+            setState(() {
+              _error = 'Could not send location to server';
+            });
+          }
+        }
+      } catch (err) {
+        // Best-effort only: log and show message but don't block navigation
+        print('Failed to send location: $err');
+        setState(() {
+          _error = 'Could not send location to server';
+        });
+      }
 
       setState(() {
         _loading = false;
