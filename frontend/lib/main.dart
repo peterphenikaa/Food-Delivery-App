@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/login_page_user/register_form.dart';
 import 'package:provider/provider.dart';
 import 'home_page_user/permission_page.dart';
 import 'login_page_user/login_page.dart';
+import 'login_page_user/login_form.dart';
 import 'splash/splash_page.dart';
+
 import 'home_page_user/cart_provider.dart';
 import 'home_page_user/address_provider.dart';
 
@@ -13,6 +16,18 @@ void main() {
 class FoodDeliveryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Food Delivery',
+      theme: ThemeData(primarySwatch: Colors.orange),
+      initialRoute: '/splash',
+      routes: {
+        '/splash': (_) => SplashPage(),
+        '/login': (_) => LoginPage(),
+        '/permissions': (_) => PermissionPage(),
+        '/auth': (_) => LoginFormPage(),
+        '/register': (_) => RegisterFormPage(),
+      },
+      debugShowCheckedModeBanner: false,
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => CartProvider()),
@@ -32,7 +47,3 @@ class FoodDeliveryApp extends StatelessWidget {
     );
   }
 }
-
-
-
-
