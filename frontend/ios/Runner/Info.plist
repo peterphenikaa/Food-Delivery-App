@@ -28,6 +28,13 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<!-- Location permission descriptions required by geolocator -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>App needs your location to show nearby restaurants and delivery options.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>App may access your location to provide location-based services while the app is in use.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>App may access your location to provide better service.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

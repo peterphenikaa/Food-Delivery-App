@@ -16,18 +16,6 @@ void main() {
 class FoodDeliveryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Food Delivery',
-      theme: ThemeData(primarySwatch: Colors.orange),
-      initialRoute: '/splash',
-      routes: {
-        '/splash': (_) => SplashPage(),
-        '/login': (_) => LoginPage(),
-        '/permissions': (_) => PermissionPage(),
-        '/auth': (_) => LoginFormPage(),
-        '/register': (_) => RegisterFormPage(),
-      },
-      debugShowCheckedModeBanner: false,
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => CartProvider()),
@@ -41,6 +29,8 @@ class FoodDeliveryApp extends StatelessWidget {
           '/splash': (_) => SplashPage(),
           '/login': (_) => LoginPage(),
           '/permissions': (_) => PermissionPage(),
+          '/auth': (_) => LoginFormPage(),
+          '/register': (_) => RegisterFormPage(),
         },
         debugShowCheckedModeBanner: false,
       ),

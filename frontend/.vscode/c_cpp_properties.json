@@ -1,0 +1,24 @@
+﻿{
+    "configurations": [
+        {
+            "name": "Win32",
+            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "includePath": [
+                "D:\\\\delivery_app\\\\Food-Delivery-App\\\\frontend\\\\windows\\\\flutter\\\\ephemeral\\\\.plugin_symlinks\\\\geolocator_windows\\\\windows\\\\include\\\\geolocator_windows",
+        "D:\\\\delivery_app\\\\Food-Delivery-App\\\\frontend\\\\windows\\\\flutter\\\\ephemeral\\\\.plugin_symlinks\\\\permission_handler_windows\\\\windows\\\\include\\\\permission_handler_windows",
+        "D:\\\\delivery_app\\\\Food-Delivery-App\\\\frontend\\\\**"
+            ],
+            "browse": {
+                "path": [
+                    "D:\\\\delivery_app\\\\Food-Delivery-App\\\\frontend\\\\**"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}
