@@ -6,6 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const foodRoute = require("./routes/foodRoute");
 const loginRoute = require("./routes/login");
+const addressRoute = require("./routes/addressRoute");
 
 // Read connection values from environment (see .env or .env.example)
 const MONGO_URL =
@@ -32,6 +33,7 @@ app.use(express.json());
 
 app.use("/api/foods", foodRoute);
 app.use("/api/auth", loginRoute);
+app.use("/api/addresses", addressRoute);
 
 // Hello World route
 app.get("/", (req, res) => {
