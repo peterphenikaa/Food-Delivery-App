@@ -48,4 +48,42 @@ router.post('/', async (req, res) => {
   }
 });
 
+
+// Lấy tất cả review của món ăn
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const food = await Food.findById(req.params.id);
+    if (!food) {
+      return res.status(404).json({ error: 'Không tìm thấy món ăn' });
+    }
+    res.json(food.reviews || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Thêm review mới cho món ăn
+router.post('/:id/reviews', async (req, res) => {
+  try {
+    console.log('[POST /api/foods/:id/reviews] incoming body =', req.body);
+    const { user, rating, comment } = req.body;
+    if (!user || !rating || !comment) {
+      return res.status(400).json({ error: 'Thiếu dữ liệu review' });
+    }
+    const food = await Food.findById(req.params.id);
+    if (!food) {
+      return res.status(404).json({ error: 'Không tìm thấy món ăn' });
+    }
+    const review = { user, rating, comment };
+    food.reviews = food.reviews || [];
+    food.reviews.unshift(review);
+    await food.save();
+    console.log('[POST /api/foods/:id/reviews] saved review for food', req.params.id);
+    res.status(201).json(review);
+  } catch (error) {
+    console.error('[POST /api/foods/:id/reviews] error=', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

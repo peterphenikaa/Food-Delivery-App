@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'product_detail_page.dart';
@@ -22,7 +23,7 @@ class _ProductListPageState extends State<ProductListPage> {
   List filteredProducts = [];
   bool loading = true;
   late String currentCategory;
-  String sortBy = 'name'; // name, price, rating, deliveryTime
+  String sortBy = 'name';
   bool sortAscending = true;
   double minPrice = 0;
   double maxPrice = 1000000;
@@ -38,13 +39,18 @@ class _ProductListPageState extends State<ProductListPage> {
   Future<void> fetchProducts() async {
     final String baseUrl = kIsWeb
         ? 'http://localhost:3000'
-        : (defaultTargetPlatform == TargetPlatform.android ? 'http://10.0.2.2:3000' : 'http://localhost:3000');
+        : (defaultTargetPlatform == TargetPlatform.android
+              ? 'http://10.0.2.2:3000'
+              : 'http://localhost:3000');
 
     final normalizedCategory = currentCategory.trim().toLowerCase();
     final bool isAll = normalizedCategory == 'tất cả danh mục';
     final Uri url = isAll
         ? Uri.parse('$baseUrl/api/foods')
-        : Uri.parse('$baseUrl/api/foods?category=' + Uri.encodeQueryComponent(currentCategory.trim()));
+        : Uri.parse(
+            '$baseUrl/api/foods?category=' +
+                Uri.encodeQueryComponent(currentCategory.trim()),
+          );
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -64,6 +70,7 @@ class _ProductListPageState extends State<ProductListPage> {
       });
     }
   }
+
   void _onCategorySelected(String value) {
     if (value != currentCategory) {
       setState(() {
@@ -78,19 +85,16 @@ class _ProductListPageState extends State<ProductListPage> {
     setState(() {
       filteredProducts = List.from(products);
 
-      // Lọc theo giá
       filteredProducts = filteredProducts.where((product) {
         double price = (product['price'] ?? 0).toDouble();
         return price >= minPrice && price <= maxPrice;
       }).toList();
 
-      // Lọc theo đánh giá
       filteredProducts = filteredProducts.where((product) {
         double rating = (product['rating'] ?? 0).toDouble();
         return rating >= minRating;
       }).toList();
 
-      // Sắp xếp
       filteredProducts.sort((a, b) {
         dynamic aValue, bValue;
 
@@ -117,9 +121,13 @@ class _ProductListPageState extends State<ProductListPage> {
         }
 
         if (aValue is String && bValue is String) {
-          return sortAscending ? aValue.compareTo(bValue) : bValue.compareTo(aValue);
+          return sortAscending
+              ? aValue.compareTo(bValue)
+              : bValue.compareTo(aValue);
         } else if (aValue is num && bValue is num) {
-          return sortAscending ? aValue.compareTo(bValue) : bValue.compareTo(aValue);
+          return sortAscending
+              ? aValue.compareTo(bValue)
+              : bValue.compareTo(aValue);
         }
         return 0;
       });
@@ -139,7 +147,10 @@ class _ProductListPageState extends State<ProductListPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Sắp xếp theo:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Sắp xếp theo:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     SizedBox(height: 8),
                     DropdownButton<String>(
                       value: sortBy,
@@ -147,8 +158,14 @@ class _ProductListPageState extends State<ProductListPage> {
                       items: [
                         DropdownMenuItem(value: 'name', child: Text('Tên')),
                         DropdownMenuItem(value: 'price', child: Text('Giá')),
-                        DropdownMenuItem(value: 'rating', child: Text('Đánh giá')),
-                        DropdownMenuItem(value: 'deliveryTime', child: Text('Thời gian giao hàng')),
+                        DropdownMenuItem(
+                          value: 'rating',
+                          child: Text('Đánh giá'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'deliveryTime',
+                          child: Text('Thời gian giao hàng'),
+                        ),
                       ],
                       onChanged: (value) {
                         setDialogState(() {
@@ -174,7 +191,10 @@ class _ProductListPageState extends State<ProductListPage> {
                       ],
                     ),
                     SizedBox(height: 16),
-                    Text('Khoảng giá (VND):', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Khoảng giá (VND):',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     SizedBox(height: 8),
                     Row(
                       children: [
@@ -210,12 +230,14 @@ class _ProductListPageState extends State<ProductListPage> {
                       ],
                     ),
                     SizedBox(height: 16),
-                    Text('Đánh giá tối thiểu:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Đánh giá tối thiểu:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     SizedBox(height: 8),
                     Row(
                       children: List.generate(5, (index) {
                         double starValue = index + 1.0;
-                        bool selected = minRating == starValue;
                         return GestureDetector(
                           onTap: () {
                             setDialogState(() {
@@ -224,7 +246,9 @@ class _ProductListPageState extends State<ProductListPage> {
                           },
                           child: Icon(
                             Icons.star,
-                            color: minRating >= starValue ? Colors.orange : Colors.grey[300],
+                            color: minRating >= starValue
+                                ? Colors.orange
+                                : Colors.grey[300],
                             size: 32,
                           ),
                         );
@@ -272,7 +296,7 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(72),
         child: SafeArea(
@@ -286,7 +310,9 @@ class _ProductListPageState extends State<ProductListPage> {
                 ),
                 PopupMenuButton<String>(
                   onSelected: _onCategorySelected,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   itemBuilder: (_) => [
                     PopupMenuItem(value: "Burger", child: Text("Burger")),
                     PopupMenuItem(value: "Pizza", child: Text("Pizza")),
@@ -294,7 +320,10 @@ class _ProductListPageState extends State<ProductListPage> {
                     PopupMenuItem(value: "Hot Dog", child: Text("Hot Dog")),
                     PopupMenuItem(value: "Fast Food", child: Text("Fast Food")),
                     PopupMenuItem(value: "Salad", child: Text("Salad")),
-                    PopupMenuItem(value: "Tất cả danh mục", child: Text("Tất cả")),
+                    PopupMenuItem(
+                      value: "Tất cả danh mục",
+                      child: Text("Tất cả"),
+                    ),
                   ],
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -305,8 +334,13 @@ class _ProductListPageState extends State<ProductListPage> {
                     ),
                     child: Row(
                       children: [
-                        Text(currentCategory.toUpperCase(),
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                        Text(
+                          currentCategory.toUpperCase(),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
                         Icon(Icons.arrow_drop_down),
                       ],
                     ),
@@ -331,10 +365,14 @@ class _ProductListPageState extends State<ProductListPage> {
                   backgroundColor: Colors.grey[200],
                   radius: 18,
                   child: IconButton(
-                    icon: Icon(Icons.filter_alt, color: Colors.blueGrey, size: 18),
+                    icon: Icon(
+                      Icons.filter_alt,
+                      color: Colors.blueGrey,
+                      size: 18,
+                    ),
                     onPressed: _showFilterDialog,
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -344,144 +382,210 @@ class _ProductListPageState extends State<ProductListPage> {
           ? Center(child: CircularProgressIndicator())
           : filteredProducts.isEmpty
           ? Center(child: Text('Không có sản phẩm phù hợp'))
-          : ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        itemCount: filteredProducts.length,
-        itemBuilder: (context, index) {
-          final item = filteredProducts[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProductDetailPage(product: Map<String, dynamic>.from(item)),
-                ),
-              );
-            },
-            child: Card(
-            elevation: 2,
-            margin: EdgeInsets.only(bottom: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Row(
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 85,
-                  height: 85,
-                  margin: EdgeInsets.only(left: 10, top: 12, bottom: 12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.grey[200],
-                    image: item['image'] != null
-                        ? DecorationImage(
-                        image: AssetImage('assets/${item['image']}'),
-                        fit: BoxFit.cover)
-                        : null,
-                  ),
-                  child: item['image'] == null
-                      ? Icon(Icons.restaurant, size: 30, color: Colors.grey)
-                      : null,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item['name'] ?? '',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 17)),
-                        SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Text(item['category'] ?? '',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                            SizedBox(width: 8),
-                            Icon(Icons.attach_money,
-                                size: 15, color: Colors.orange[700]),
-                            Text("${item['price'] ?? 0} VND",
-                                style: TextStyle(fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        if (item['deliveryTime'] != null) ...[
-                          SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(Icons.timer_outlined,
-                                  size: 15, color: Colors.grey[600]),
-                              SizedBox(width: 4),
-                              Text("${item['deliveryTime']} min",
-                                  style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-                            ],
-                          )
-                        ],
-                      ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Text(
+                    '${currentCategory}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
-                // Add to cart button
-                Consumer<CartProvider>(
-                  builder: (context, cartProvider, child) {
-                    final isInCart = cartProvider.isItemInCart(
-                      item['_id'] ?? item['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-                      'M', // Default size
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: GestureDetector(
-                        onTap: () {
-                          if (!isInCart) {
-                            final cartItem = CartItem(
-                              id: item['_id'] ?? item['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-                              name: item['name'] ?? '',
-                              image: item['image'],
-                              basePrice: (item['price'] ?? 0) as int,
-                              size: 'M',
-                              quantity: 1,
-                              restaurant: 'Uttora Coffee House',
-                              category: item['category'] ?? '',
-                              description: item['description'],
-                            );
-                            cartProvider.addItem(cartItem);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Đã thêm ${item['name']} vào giỏ hàng'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isInCart ? Colors.green : Colors.orange,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isInCart ? Colors.green : Colors.orange).withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            isInCart ? Icons.check : Icons.add,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                Expanded(
+                  child: GridView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.7,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredProducts[index];
+                      return _ProductCard(product: item);
+                    },
+                  ),
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _ProductCard extends StatelessWidget {
+  final Map<String, dynamic> product;
+
+  const _ProductCard({Key? key, required this.product}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final String name = product['name'] ?? '';
+    final int price = (product['price'] ?? 0) as int;
+    final String category = product['category'] ?? '';
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ProductDetailPage(product: Map<String, dynamic>.from(product)),
           ),
-          );
-        },
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Container
+            Container(
+              height: 130,
+              decoration: BoxDecoration(
+                color: Color(0xFFFFF5E1),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: product['image'] != null
+                        ? Image.asset(
+                            'assets/${product['image']}',
+                            height: 100,
+                            fit: BoxFit.contain,
+                          )
+                        : Icon(Icons.restaurant, size: 60, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+
+            // Product Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          category,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '\$$price',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Consumer<CartProvider>(
+                          builder: (context, cartProvider, child) {
+                            final isInCart = cartProvider.isItemInCart(
+                              product['_id'] ??
+                                  product['id'] ??
+                                  DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
+                              'M',
+                            );
+                            return GestureDetector(
+                              onTap: () {
+                                if (!isInCart) {
+                                  final cartItem = CartItem(
+                                    id:
+                                        product['_id'] ??
+                                        product['id'] ??
+                                        DateTime.now().millisecondsSinceEpoch
+                                            .toString(),
+                                    name: name,
+                                    image: product['image'],
+                                    basePrice: price,
+                                    size: 'M',
+                                    quantity: 1,
+                                    restaurant: 'Uttora Coffee House',
+                                    category: category,
+                                    description: product['description'],
+                                  );
+                                  cartProvider.addItem(cartItem);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Đã thêm $name vào giỏ hàng',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: isInCart
+                                      ? Colors.green
+                                      : Colors.orange,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  isInCart ? Icons.check : Icons.add,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

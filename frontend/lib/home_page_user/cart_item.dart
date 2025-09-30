@@ -8,6 +8,7 @@ class CartItem {
   final String restaurant;
   final String category;
   final String? description;
+  final String? userNote;
 
   CartItem({
     required this.id,
@@ -19,6 +20,7 @@ class CartItem {
     required this.restaurant,
     required this.category,
     this.description,
+    this.userNote,
   });
 
   // Price is same for all sizes

@@ -27,6 +27,10 @@ async function run() {
       isAvailable: true,
       rating: 4.5,
       deliveryTime: 30,
+      reviews: [
+        { user: 'Alice', rating: 5, comment: 'Rất ngon!', createdAt: new Date() },
+        { user: 'Bob', rating: 4, comment: 'Tạm ổn, bánh hơi khô', createdAt: new Date() }
+      ],
     },
     {
       name: "Pepperoni Pizza",
@@ -38,6 +42,9 @@ async function run() {
       isAvailable: true,
       rating: 4.7,
       deliveryTime: 25,
+      reviews: [
+        { user: 'Charlie', rating: 5, comment: 'Phô mai thơm, topping nhiều', createdAt: new Date() }
+      ],
     },
     {
       name: "Chicken Sandwich",

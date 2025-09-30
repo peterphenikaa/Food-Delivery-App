@@ -8,6 +8,7 @@ import 'splash/splash_page.dart';
 
 import 'home_page_user/cart_provider.dart';
 import 'home_page_user/address_provider.dart';
+import 'home_page_user/recent_provider.dart';
 
 void main() {
   runApp(FoodDeliveryApp());
@@ -20,6 +21,7 @@ class FoodDeliveryApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => CartProvider()),
         ChangeNotifierProvider(create: (context) => AddressProvider()),
+        ChangeNotifierProvider(create: (context) => RecentProvider()),
       ],
       child: MaterialApp(
         title: 'Food Delivery',
