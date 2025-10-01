@@ -6,11 +6,23 @@ import 'address_model.dart';
 class EditAddressPage extends StatefulWidget {
   final AddressModel? address;
   final String userId;
+  final String? initialStreet;
+  final String? initialWard;
+  final String? initialDistrict;
+  final String? initialCity;
+  final String? initialFullName;
+  final String? initialPhoneNumber;
 
   const EditAddressPage({
     Key? key,
     this.address,
     required this.userId,
+    this.initialStreet,
+    this.initialWard,
+    this.initialDistrict,
+    this.initialCity,
+    this.initialFullName,
+    this.initialPhoneNumber,
   }) : super(key: key);
 
   @override
@@ -42,6 +54,26 @@ class _EditAddressPageState extends State<EditAddressPage> {
       _cityController.text = widget.address!.city;
       _noteController.text = widget.address!.note ?? '';
       _isDefault = widget.address!.isDefault;
+    } else {
+      // Pre-fill from reverse geocoded components if provided
+      if (widget.initialFullName != null && widget.initialFullName!.trim().isNotEmpty) {
+        _fullNameController.text = widget.initialFullName!;
+      }
+      if (widget.initialPhoneNumber != null && widget.initialPhoneNumber!.trim().isNotEmpty) {
+        _phoneController.text = widget.initialPhoneNumber!;
+      }
+      if (widget.initialStreet != null && widget.initialStreet!.trim().isNotEmpty) {
+        _streetController.text = widget.initialStreet!;
+      }
+      if (widget.initialWard != null && widget.initialWard!.trim().isNotEmpty) {
+        _wardController.text = widget.initialWard!;
+      }
+      if (widget.initialDistrict != null && widget.initialDistrict!.trim().isNotEmpty) {
+        _districtController.text = widget.initialDistrict!;
+      }
+      if (widget.initialCity != null && widget.initialCity!.trim().isNotEmpty) {
+        _cityController.text = widget.initialCity!;
+      }
     }
   }
 

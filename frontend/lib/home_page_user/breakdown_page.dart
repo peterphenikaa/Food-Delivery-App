@@ -5,7 +5,8 @@ import 'cart_item.dart';
 import 'checkout_page.dart';
 
 class BreakdownPage extends StatelessWidget {
-  const BreakdownPage({Key? key}) : super(key: key);
+  final String deliveryAddress;
+  const BreakdownPage({Key? key, required this.deliveryAddress}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +68,7 @@ class BreakdownPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 
                 // Delivery Information
-                _buildDeliveryInfo(),
+                _buildDeliveryInfo(deliveryAddress),
                 const SizedBox(height: 20),
                 
                 // Total
@@ -411,7 +412,7 @@ class BreakdownPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDeliveryInfo() {
+  Widget _buildDeliveryInfo(String addressText) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -444,7 +445,7 @@ class BreakdownPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _buildInfoRow('Địa chỉ:', '2118 Thornridge Cir. Syracuse'),
+          _buildInfoRow('Địa chỉ:', addressText),
           _buildInfoRow('Thời gian dự kiến:', '20-30 phút'),
           _buildInfoRow('Phương thức thanh toán:', 'Chuyển khoản QR'),
         ],

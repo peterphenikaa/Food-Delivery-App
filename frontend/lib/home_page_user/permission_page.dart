@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'home_pages.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class PermissionPage extends StatefulWidget {
   @override
@@ -126,9 +127,13 @@ class _PermissionPageState extends State<PermissionPage> {
         _loading = false;
       });
 
+      final args = (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+          settings: RouteSettings(arguments: args),
+        ),
       );
     } catch (e) {
       final message = e.toString();

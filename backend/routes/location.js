@@ -34,4 +34,33 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/location/:userId/latest
+// Trả về vị trí mới nhất lưu trong Redis cho user
+router.get("/:userId/latest", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+    const key = `locations:${userId}`;
+    // lấy phần tử cuối cùng (mới nhất) trong list
+    const items = await client.lRange(key, -1, -1);
+    if (!items || items.length === 0) {
+      return res.status(404).json({ error: "No location found" });
+    }
+
+    let item;
+    try {
+      item = JSON.parse(items[0]);
+    } catch (_) {
+      // nếu không parse được, trả về raw
+      return res.json({ raw: items[0] });
+    }
+
+    return res.json(item);
+  } catch (err) {
+    console.error("Error reading latest location", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;

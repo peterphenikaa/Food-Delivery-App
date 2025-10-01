@@ -22,6 +22,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> restaurants = [];
   bool isLoadingRestaurants = true;
+  String? _latestLatLng;
+  String? _latestAddress;
+  Map<String, String>? _latestComponents; // street, ward, district, city
 
   @override
   void initState() {
@@ -35,6 +38,7 @@ class _HomePageState extends State<HomePage> {
       addressProvider.loadAddresses('user123'); // Replace with actual user ID
     });
     _loadRestaurants();
+    _loadLatestLocation();
   }
 
   String get baseUrl {
@@ -71,6 +75,79 @@ class _HomePageState extends State<HomePage> {
         isLoadingRestaurants = false;
       });
     }
+  }
+
+  Future<void> _loadLatestLocation() async {
+    try {
+      const userId = 'anonymous';
+      final url = Uri.parse('$baseUrl/api/location/$userId/latest');
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final lat = data['lat'];
+        final lng = data['lng'];
+        setState(() {
+          _latestLatLng = (lat != null && lng != null) ? '$lat, $lng' : null;
+        });
+        if (lat != null && lng != null) {
+          final result = await _reverseGeocode(lat, lng);
+          if (result != null) {
+            setState(() {
+              _latestAddress = result['display'] as String?;
+              final c = result['components'];
+              if (c is Map<String, String>) _latestComponents = c;
+            });
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<Map<String, dynamic>?> _reverseGeocode(num lat, num lng) async {
+    try {
+      final uri = Uri.parse(
+          'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='
+          '$lat&lon=$lng&zoom=18&addressdetails=1');
+      final resp = await http.get(
+        uri,
+        headers: {
+          'User-Agent': 'food_delivery_app/1.0 (+https://example.com)',
+          'Accept-Language': 'vi,en;q=0.8',
+        },
+      );
+      if (resp.statusCode == 200) {
+        final body = json.decode(resp.body);
+        final address = body['address'];
+        String? display; // Compose VN style manually
+        Map<String, String> components = {};
+        if (address is Map) {
+          final road = address['road'] ?? address['residential'] ?? address['pedestrian'];
+          final house = address['house_number'];
+          final ward = address['ward'] ?? address['suburb'] ?? address['neighbourhood'] ?? address['quarter'] ?? address['hamlet'] ?? address['city_district'];
+          final district = address['city_district'] ?? address['district'] ?? address['county'] ?? address['state_district'];
+          final city = address['city'] ?? address['town'] ?? address['village'] ?? address['state'] ?? address['province'];
+
+          String? street;
+          if (road != null && house != null) street = '$house $road'; else street = road?.toString();
+          if (street != null) components['street'] = street;
+          if (ward != null) components['ward'] = ward.toString();
+          if (district != null) components['district'] = district.toString();
+          if (city != null) components['city'] = city.toString();
+        }
+        display = [
+          components['street'],
+          components['ward'],
+          components['district'],
+          components['city']
+        ]
+            .whereType<String>()
+            .where((s) => s.trim().isNotEmpty)
+            .join(', ');
+
+        return {'display': display.isNotEmpty ? display : null, 'components': components};
+      }
+    } catch (_) {}
+    return null;
   }
 
   @override
@@ -120,8 +197,18 @@ class _HomePageState extends State<HomePage> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                addressProvider.defaultAddress?.shortAddress ??
-                                    "Văn phòng Halal Lab",
+                                _latestAddress ??
+                                    (_latestComponents != null
+                                        ? [
+                                            _latestComponents?['ward'],
+                                            _latestComponents?['district'],
+                                            _latestComponents?['city']
+                                          ]
+                                            .whereType<String>()
+                                            .where((s) => s.trim().isNotEmpty)
+                                            .join(', ')
+                                        : (addressProvider.defaultAddress?.shortAddress ??
+                                            "Văn phòng Halal Lab")),
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w500,

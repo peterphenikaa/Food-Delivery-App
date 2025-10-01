@@ -20,12 +20,14 @@ async function run() {
       email: "alice@example.com",
       password: "password123", // For demo only. Hash in production.
       name: "Alice Nguyen",
+      phoneNumber: "0912345678",
       address: { houseNumber: "12A", ward: "Phuong 1", city: "Ho Chi Minh" },
     },
     {
       email: "bob@example.com",
       password: "password456",
       name: "Bob Tran",
+      phoneNumber: "0987654321",
       address: { houseNumber: "45B", ward: "Phuong 2", city: "Ha Noi" },
     },
   ];

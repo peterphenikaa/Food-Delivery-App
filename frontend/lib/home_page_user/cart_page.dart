@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'cart_provider.dart';
 import 'cart_item.dart';
@@ -16,6 +19,130 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
+  String? _latestLatLng;
+  String? _latestAddress;
+  Map<String, String>? _latestComponents; // street, ward, district, city
+  String? _suggestedFullName;
+  String? _suggestedPhoneNumber;
+  // Logged-in user info (from /api/auth/login response or stored globally)
+  String? _userId;
+  String? _userName;
+  String? _userPhone;
+  bool _loadingLocation = false;
+  String? _locationError;
+
+  String get baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:3000';
+    }
+    return defaultTargetPlatform == TargetPlatform.android
+        ? 'http://10.0.2.2:3000'
+        : 'http://localhost:3000';
+  }
+
+  Future<void> _loadLatestLocation() async {
+    setState(() {
+      _loadingLocation = true;
+      _locationError = null;
+    });
+    try {
+      // NOTE: align with userId used when posting in PermissionPage
+      const userId = 'anonymous';
+      final url = Uri.parse('$baseUrl/api/location/$userId/latest');
+      final resp = await http.get(url);
+      if (resp.statusCode == 200) {
+        final data = json.decode(resp.body);
+        final lat = data['lat'];
+        final lng = data['lng'];
+        setState(() {
+          _latestLatLng = (lat != null && lng != null) ? '$lat, $lng' : null;
+        });
+        if (lat != null && lng != null) {
+          final result = await _reverseGeocode(lat, lng);
+          if (result != null) {
+            setState(() {
+              _latestAddress = result['display'] as String?;
+              final c = result['components'];
+              if (c is Map<String, String>) {
+                _latestComponents = c;
+              }
+            });
+          }
+        }
+      } else {
+        setState(() {
+          _locationError = 'Không có vị trí';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _locationError = 'Không thể tải vị trí';
+      });
+    } finally {
+      setState(() {
+        _loadingLocation = false;
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>?> _reverseGeocode(num lat, num lng) async {
+    try {
+      final uri = Uri.parse(
+          'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$lat&lon=$lng&zoom=18&addressdetails=1');
+      final resp = await http.get(
+        uri,
+        headers: {
+          'User-Agent': 'food_delivery_app/1.0 (+https://example.com)',
+          'Accept-Language': 'vi,en;q=0.8'
+        },
+      );
+      if (resp.statusCode == 200) {
+        final body = json.decode(resp.body);
+        final address = body['address'];
+        String? display = body['display_name'];
+        Map<String, String> components = {};
+        if (address is Map) {
+          final road = address['road'];
+          final house = address['house_number'];
+          final ward = address['suburb'] ?? address['neighbourhood'] ?? address['quarter'] ?? address['hamlet'] ?? address['city_district'];
+          final district = address['district'] ?? address['county'] ?? address['state_district'];
+          final city = address['city'] ?? address['town'] ?? address['village'] ?? address['county'] ?? address['state'];
+          // Try to extract name and phone from address tags if available
+          final nameTag = address['name'] ?? address['contact_name'] ?? address['operator'];
+          final phoneTag = address['phone'] ?? address['contact:phone'] ?? address['contact_phone'] ?? address['telephone'];
+
+          // build street string "house road"
+          String? street;
+          if (road != null && house != null) street = '$house $road';
+          else street = road?.toString();
+
+          if (street != null) components['street'] = street;
+          if (ward != null) components['ward'] = ward.toString();
+          if (district != null) components['district'] = district.toString();
+          if (city != null) components['city'] = city.toString();
+          if (nameTag != null) _suggestedFullName = nameTag.toString();
+          if (phoneTag != null) _suggestedPhoneNumber = phoneTag.toString();
+        }
+        display ??= () {
+          final parts = [
+            components['street'],
+            components['ward'],
+            components['district'],
+            components['city']
+          ].whereType<String>().where((s) => s.trim().isNotEmpty).join(', ');
+          return parts.isNotEmpty ? parts : null;
+        }();
+        if (display != null || components.isNotEmpty) {
+          return {
+            'display': display,
+            'components': components,
+          };
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -23,11 +150,38 @@ class _CartPageState extends State<CartPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final addressProvider = Provider.of<AddressProvider>(context, listen: false);
       addressProvider.loadAddresses('user123'); // Replace with actual user ID
+      _loadLatestLocation();
+      _loadUserProfileFromStorage();
     });
+  }
+
+  Future<void> _loadUserProfileFromStorage() async {
+    try {
+      // Demo: fetch a profile from backend if userId/name not present
+      if (_userId == null || _userName == null || _userPhone == null) {
+        final url = Uri.parse('${baseUrl}/api/auth/profile');
+        final resp = await http.get(url);
+        if (resp.statusCode == 200) {
+          final data = json.decode(resp.body);
+          setState(() {
+            _userId = (data['id'] ?? 'user123').toString();
+            _userName = data['name']?.toString();
+            _userPhone = data['phoneNumber']?.toString();
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
+    // Try to receive user info passed via navigation
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    if (routeArgs is Map && _userId == null) {
+      _userId = (routeArgs['userId'] ?? 'user123')?.toString();
+      _userName = routeArgs['name']?.toString();
+      _userPhone = routeArgs['phoneNumber']?.toString();
+    }
     return Scaffold(
       backgroundColor: const Color(0xff2c2c2e), // Dark background
       appBar: AppBar(
@@ -193,8 +347,14 @@ class _CartPageState extends State<CartPage> {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const EditAddressPage(
+                              builder: (context) => EditAddressPage(
                                 userId: 'user123', // Replace with actual user ID
+                                initialStreet: _latestComponents?['street'],
+                                initialWard: _latestComponents?['ward'],
+                                initialDistrict: _latestComponents?['district'],
+                                initialCity: _latestComponents?['city'],
+                                initialFullName: _userName ?? _suggestedFullName,
+                                initialPhoneNumber: _userPhone ?? _suggestedPhoneNumber,
                               ),
                             ),
                           );
@@ -225,7 +385,11 @@ class _CartPageState extends State<CartPage> {
                     border: Border.all(color: Colors.grey[300]!),
                   ),
                   child: Text(
-                    addressProvider.defaultAddress?.fullAddress ?? '2118 Thornridge Cir. Syracuse',
+                    _latestAddress ??
+                        (_latestLatLng != null
+                            ? 'Vị trí hiện tại: $_latestLatLng'
+                            : (addressProvider.defaultAddress?.fullAddress ??
+                                '2118 Thornridge Cir. Syracuse, New York, New York')),
                     style: TextStyle(
                       color: Colors.grey[700],
                       fontSize: 16,
@@ -265,10 +429,16 @@ class _CartPageState extends State<CartPage> {
                     Builder(
                       builder: (context) => TextButton(
                         onPressed: () {
+                          final addressText = _latestAddress ??
+                              (_latestLatLng != null
+                                  ? 'Vị trí hiện tại: $_latestLatLng'
+                                  : (addressProvider.defaultAddress?.fullAddress ?? ''));
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const BreakdownPage(),
+                              builder: (context) => BreakdownPage(
+                                deliveryAddress: addressText,
+                              ),
                             ),
                           );
                         },

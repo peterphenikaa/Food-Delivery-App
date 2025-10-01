@@ -35,11 +35,25 @@ class _LoginFormPageState extends State<LoginFormPage> {
 
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
-        // simple success path
+        // Persist minimal profile for later prefill
+        try {
+          // A lightweight storage using shared_preferences would be ideal;
+          // for demo we use Navigator arguments in next route
+        } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Welcome ${body['user']['name'] ?? ''}')),
         );
-        Navigator.pushReplacementNamed(context, '/permissions');
+        // Pass user info to PermissionPage so downstream screens can access
+        Navigator.pushReplacementNamed(
+          context,
+          '/permissions',
+          arguments: {
+            'userId': body['user']['id'],
+            'name': body['user']['name'],
+            'phoneNumber': body['user']['phoneNumber'],
+            'email': body['user']['email'],
+          },
+        );
       } else {
         final body = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(

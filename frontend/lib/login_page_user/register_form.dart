@@ -16,6 +16,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
   final _houseNumberController = TextEditingController();
   final _wardController = TextEditingController();
   final _cityController = TextEditingController();
+  final _phoneController = TextEditingController();
   
   bool _loading = false;
   bool _obscurePassword = true;
@@ -37,6 +38,12 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
       print('❌ Validation failed - empty fields');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+    if (_phoneController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter phone number')),
       );
       return;
     }
@@ -66,6 +73,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
         'name': name,
         'email': email,
         'password': password,
+        'phoneNumber': _phoneController.text.trim(),
         'address': {
           'houseNumber': houseNumber,
           'ward': ward,
@@ -288,6 +296,34 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                       ),
                     ),
                     SizedBox(height: 20),
+
+            // Phone field
+            Text('PHONE NUMBER', 
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              )
+            ),
+            SizedBox(height: 8),
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                hintText: '0123456789',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                filled: true,
+                fillColor: Color(0xFFF3F7FB),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16, 
+                  vertical: 16
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
 
                     // Ward field
                     Text('WARD', 
