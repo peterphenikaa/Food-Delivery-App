@@ -1,4 +1,4 @@
-require("dotenv").config();
+erequire("dotenv").config();
 const mongoose = require("mongoose");
 const Food = require("./models/food");
 
