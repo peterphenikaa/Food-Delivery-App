@@ -14,7 +14,7 @@ Chat thời gian thực giữa khách hàng và Shipper.
 
 Cập nhật vị trí Shipper trên bản đồ realtime.
 
-Thiết kế giao diện tham khảo từ Figma: Link Figma
+Thiết kế giao diện tham khảo từ Figma: Link Figma : https://www.figma.com/design/3xanvnmDn6GOyTDaOAzxdC/Food-Delivery-App--Community-?node-id=601-1128
 
 ⚡ Các tính năng chính
 Task 1: Quản lý tài khoản & Chef
