@@ -23,6 +23,7 @@ const LoginSchema = new mongoose.Schema(
     password: { type: String, required: true },
     name: { type: String, required: true },
     phoneNumber: { type: String, required: true },
+    role: { type: String, enum: ['user', 'shipper', 'admin'], default: 'user' },
     address: { type: AddressSchema, required: true },
   },
   { timestamps: true }

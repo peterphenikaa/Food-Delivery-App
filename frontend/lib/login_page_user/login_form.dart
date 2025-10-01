@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../home_page_user/shipper_home.dart';
+import '../home_page_user/admin_home.dart';
 
 class LoginFormPage extends StatefulWidget {
   @override
@@ -44,16 +46,29 @@ class _LoginFormPageState extends State<LoginFormPage> {
           SnackBar(content: Text('Welcome ${body['user']['name'] ?? ''}')),
         );
         // Pass user info to PermissionPage so downstream screens can access
-        Navigator.pushReplacementNamed(
-          context,
-          '/permissions',
-          arguments: {
-            'userId': body['user']['id'],
-            'name': body['user']['name'],
-            'phoneNumber': body['user']['phoneNumber'],
-            'email': body['user']['email'],
-          },
-        );
+        final role = (body['user']['role'] ?? 'user').toString();
+        if (role == 'shipper') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ShipperHomePage()),
+          );
+        } else if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminHomePage()),
+          );
+        } else {
+          Navigator.pushReplacementNamed(
+            context,
+            '/permissions',
+            arguments: {
+              'userId': body['user']['id'],
+              'name': body['user']['name'],
+              'phoneNumber': body['user']['phoneNumber'],
+              'email': body['user']['email'],
+            },
+          );
+        }
       } else {
         final body = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(

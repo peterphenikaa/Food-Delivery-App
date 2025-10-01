@@ -7,7 +7,7 @@ router.post("/register", async (req, res) => {
   try {
     // Log for debugging
     console.log("[POST /api/auth/register] body=", req.body);
-    let { email, password, name, phoneNumber, address } = req.body;
+    let { email, password, name, phoneNumber, address, role } = req.body;
     // Allow alternative key 'phone'
     if (!phoneNumber && req.body.phone) phoneNumber = req.body.phone;
 
@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     if (existing)
       return res.status(409).json({ error: "Email already registered" });
 
-    const user = new Login({ email, password, name, phoneNumber, address });
+    const user = new Login({ email, password, name, phoneNumber, address, role: role || 'user' });
     await user.save();
     res.status(201).json({ message: "User created", userId: user._id });
   } catch (err) {
@@ -56,7 +56,7 @@ router.post("/login", async (req, res) => {
 
     res.json({
       message: "Login successful",
-      user: { id: user._id, email: user.email, name: user.name, phoneNumber: user.phoneNumber },
+      user: { id: user._id, email: user.email, name: user.name, phoneNumber: user.phoneNumber, role: user.role },
     });
   } catch (err) {
     console.error(err);
