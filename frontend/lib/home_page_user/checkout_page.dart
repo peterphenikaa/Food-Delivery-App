@@ -1,11 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'cart_provider.dart';
 import 'cart_item.dart';
 import 'order_success_page.dart';
+import 'address_provider.dart';
 
 class CheckoutPage extends StatelessWidget {
   const CheckoutPage({Key? key}) : super(key: key);
+
+  String get baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:3000';
+    }
+    return defaultTargetPlatform == TargetPlatform.android
+        ? 'http://10.0.2.2:3000'
+        : 'http://localhost:3000';
+  }
+
+  Future<void> _createOrder(BuildContext context, CartProvider cartProvider, String deliveryAddress) async {
+    try {
+      final subtotal = cartProvider.totalPrice;
+      final deliveryFee = 15000;
+      final serviceFee = (subtotal * 0.1).round();
+      final total = subtotal + deliveryFee + serviceFee;
+
+      final orderData = {
+        'userId': 'user123',
+        'userName': 'User Name',
+        'userPhone': '0123456789',
+        'items': cartProvider.items
+            .map((item) => {
+                  'name': item.name,
+                  'image': item.image,
+                  'size': item.size,
+                  'quantity': item.quantity,
+                  'price': item.price,
+                  'totalPrice': item.totalPrice,
+                })
+            .toList(),
+        'subtotal': subtotal,
+        'deliveryFee': deliveryFee,
+        'serviceFee': serviceFee,
+        'total': total,
+        'deliveryAddress': deliveryAddress,
+        'estimatedDeliveryTime': '20-30 phút',
+        'restaurantName': 'Uttora Coffee House',
+        'restaurantAddress': '123 Main St',
+      };
+
+      print('🚀 Creating order: ${json.encode(orderData)}');
+      
+      final url = Uri.parse('$baseUrl/api/orders');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(orderData),
+      );
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        final orderId = data['order']['orderId'];
+        
+        print('✅ Order created: $orderId');
+        
+        // Clear cart
+        cartProvider.clearCart();
+        
+        // Navigate to success page
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => OrderSuccessPage(
+              orderId: orderId,
+              totalAmount: total.toDouble(),
+            ),
+          ),
+        );
+      } else {
+        print('❌ Failed to create order: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to create order: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('💥 Error creating order: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tạo đơn hàng: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +132,8 @@ class CheckoutPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Consumer<CartProvider>(
-        builder: (context, cartProvider, child) {
+      body: Consumer2<CartProvider, AddressProvider>(
+        builder: (context, cartProvider, addressProvider, child) {
           if (cartProvider.isEmpty) {
             return _buildEmptyCart();
           }
@@ -66,7 +155,7 @@ class CheckoutPage extends StatelessWidget {
                 _buildOrderDetails(cartProvider),
                 const SizedBox(height: 30),
 
-                _buildActionButtons(context, cartProvider),
+                _buildActionButtons(context, cartProvider, addressProvider),
               ],
             ),
           );
@@ -482,14 +571,15 @@ class CheckoutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, CartProvider cartProvider) {
+  Widget _buildActionButtons(BuildContext context, CartProvider cartProvider, AddressProvider addressProvider) {
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              _showOrderConfirmation(context, cartProvider);
+              final deliveryAddress = addressProvider.defaultAddress?.fullAddress ?? 'Địa chỉ chưa cập nhật';
+              _showOrderConfirmation(context, cartProvider, deliveryAddress);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
@@ -662,7 +752,7 @@ class CheckoutPage extends StatelessWidget {
     );
   }
 
-  void _showOrderConfirmation(BuildContext context, CartProvider cartProvider) {
+  void _showOrderConfirmation(BuildContext context, CartProvider cartProvider, String deliveryAddress) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -701,23 +791,7 @@ class CheckoutPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                
-                // Generate order ID
-                final orderId = 'ORD${DateTime.now().millisecondsSinceEpoch}';
-                final totalAmount = cartProvider.totalPrice + 15000 + (cartProvider.totalPrice * 0.1);
-                
-                // Clear cart
-                cartProvider.clearCart();
-                
-                // Navigate to success page
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => OrderSuccessPage(
-                      orderId: orderId,
-                      totalAmount: totalAmount,
-                    ),
-                  ),
-                );
+                _createOrder(context, cartProvider, deliveryAddress);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,

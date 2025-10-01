@@ -385,11 +385,11 @@ class _CartPageState extends State<CartPage> {
                     border: Border.all(color: Colors.grey[300]!),
                   ),
                   child: Text(
-                    _latestAddress ??
-                        (_latestLatLng != null
-                            ? 'Vị trí hiện tại: $_latestLatLng'
-                            : (addressProvider.defaultAddress?.fullAddress ??
-                                '2118 Thornridge Cir. Syracuse, New York, New York')),
+                    addressProvider.defaultAddress?.fullAddress ??
+                        (_latestAddress ??
+                            (_latestLatLng != null
+                                ? 'Vị trí hiện tại: $_latestLatLng'
+                                : '2118 Thornridge Cir. Syracuse, New York, New York')),
                     style: TextStyle(
                       color: Colors.grey[700],
                       fontSize: 16,
@@ -429,10 +429,11 @@ class _CartPageState extends State<CartPage> {
                     Builder(
                       builder: (context) => TextButton(
                         onPressed: () {
-                          final addressText = _latestAddress ??
-                              (_latestLatLng != null
-                                  ? 'Vị trí hiện tại: $_latestLatLng'
-                                  : (addressProvider.defaultAddress?.fullAddress ?? ''));
+                          final addressText = addressProvider.defaultAddress?.fullAddress ??
+                              (_latestAddress ??
+                                  (_latestLatLng != null
+                                      ? 'Vị trí hiện tại: $_latestLatLng'
+                                      : ''));
                           Navigator.push(
                             context,
                             MaterialPageRoute(

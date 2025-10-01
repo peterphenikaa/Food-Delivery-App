@@ -196,19 +196,18 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               const SizedBox(height: 2),
-                              Text(
-                                _latestAddress ??
-                                    (_latestComponents != null
-                                        ? [
-                                            _latestComponents?['ward'],
-                                            _latestComponents?['district'],
-                                            _latestComponents?['city']
-                                          ]
-                                            .whereType<String>()
-                                            .where((s) => s.trim().isNotEmpty)
-                                            .join(', ')
-                                        : (addressProvider.defaultAddress?.shortAddress ??
-                                            "Văn phòng Halal Lab")),
+                                Text(
+                                  addressProvider.defaultAddress?.shortAddress ??
+                                      (_latestComponents != null
+                                          ? [
+                                              _latestComponents?['ward'],
+                                              _latestComponents?['district'],
+                                              _latestComponents?['city']
+                                            ]
+                                              .whereType<String>()
+                                              .where((s) => s.trim().isNotEmpty)
+                                              .join(', ')
+                                          : (_latestAddress ?? "Văn phòng Halal Lab")),
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w500,
