@@ -47,7 +47,7 @@ Thông báo trạng thái đơn: tự động cập nhật từ Chef & Shipper.
 
 🛠️ Công nghệ sử dụng
 
-Frontend: ReactJS / VueJS
+Frontend: ReactJS / VueJS/ Flutter
 
 Backend: Node.js / Express / NestJS
 
