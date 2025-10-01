@@ -1,61 +1,60 @@
-Food Delivery App
+🍔 Food Delivery App
 
+Một ứng dụng giao đồ ăn trực tuyến, kết nối User, Chef và Shipper với trải nghiệm realtime đầy đủ.
 
-Ứng dụng giao đồ ăn với tính năng quản lý đơn hàng, giỏ hàng, thanh toán và chat thời gian thực.
+🔹 Giới thiệu
 
-Mô tả dự án
+Dự án Food Delivery App mô phỏng quy trình đặt món – nấu – giao với các tính năng:
 
-Dự án này là một ứng dụng Food Delivery được xây dựng với mục tiêu cung cấp trải nghiệm hoàn chỉnh từ phía User, Chef đến Shipper. Ứng dụng hỗ trợ:
-
-Đăng nhập và quản lý tài khoản cho User, Chef và Shipper.
+Quản lý tài khoản User, Chef và Shipper.
 
 Quản lý sản phẩm, giỏ hàng và thanh toán.
 
-Tính năng chat thời gian thực giữa khách hàng và Shipper.
+Chat thời gian thực giữa khách hàng và Shipper.
 
 Cập nhật vị trí Shipper trên bản đồ realtime.
 
-Thiết kế UI/UX tham khảo từ Figma: Link Figma
+Thiết kế giao diện tham khảo từ Figma: Link Figma
 
-Các tính năng chính
-Task 1: Quản lý tài khoản và Chef
+⚡ Các tính năng chính
+Task 1: Quản lý tài khoản & Chef
 
 Giao diện đăng nhập/đăng ký cho User và Chef.
 
-Chef Dashboard: nhận đơn, quản lý món ăn, chỉnh sửa thông tin sản phẩm.
+Chef Dashboard: nhận đơn, quản lý món ăn, cập nhật sản phẩm.
 
-Shipper Account: xem thông tin đơn hàng được giao, lịch sử giao hàng.
+Shipper Account: theo dõi đơn hàng, lịch sử giao hàng.
 
-Task 2: Giao diện User và quản lý giỏ hàng
+Task 2: Giao diện Client & Giỏ hàng
 
-Trang chủ Client: danh sách sản phẩm, bộ lọc theo loại, giá, đánh giá.
+Trang chủ hiển thị danh sách sản phẩm với bộ lọc thông minh.
 
-Chi tiết sản phẩm: mô tả, đánh giá, thêm vào giỏ hàng.
+Trang chi tiết sản phẩm với mô tả, đánh giá và nút thêm vào giỏ hàng.
 
-Giỏ hàng: CRUD đầy đủ (Thêm, Xóa, Cập nhật số lượng, Xem tổng).
+Giỏ hàng: CRUD đầy đủ, hiển thị tổng giá, số lượng, chỉnh sửa và xóa món.
 
 Thanh toán: tích hợp cơ chế thanh toán an toàn.
 
-Database Design: lưu trữ thông tin người dùng, sản phẩm, đơn hàng, giỏ hàng, và thanh toán.
+Database: quản lý người dùng, sản phẩm, giỏ hàng, đơn hàng và thanh toán.
 
-Task 3: Chat và theo dõi vị trí Shipper
+Task 3: Chat & Realtime Shipper
 
-WebSocket Chat Realtime: giao tiếp giữa khách hàng và Shipper.
+Chat realtime giữa khách hàng và Shipper.
 
-Bản đồ Realtime: hiển thị vị trí Shipper trong quá trình giao hàng.
+Bản đồ realtime: cập nhật vị trí Shipper trong quá trình giao hàng.
 
-Thông báo trạng thái đơn hàng: cập nhật liên tục từ Chef và Shipper.
+Thông báo trạng thái đơn: tự động cập nhật từ Chef & Shipper.
 
-Công nghệ sử dụng
+🛠️ Công nghệ sử dụng
 
-Frontend: ReactJS / VueJS (tuỳ dự án)
+Frontend: ReactJS / VueJS
 
 Backend: Node.js / Express / NestJS
 
-Realtime & WebSocket: Socket.IO
+Realtime: Socket.IO
 
-Database: PostgreSQL / MongoDB
+Database: MongoDB
 
-Thanh toán: Stripe / PayPal (tuỳ dự án)
+Thanh toán: Stripe / PayPal
 
 Bản đồ: Google Maps API / Mapbox
