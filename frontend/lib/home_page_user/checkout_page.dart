@@ -7,6 +7,7 @@ import 'cart_provider.dart';
 import 'cart_item.dart';
 import 'order_success_page.dart';
 import 'address_provider.dart';
+import '../auth/auth_provider.dart';
 
 class CheckoutPage extends StatelessWidget {
   const CheckoutPage({Key? key}) : super(key: key);
@@ -27,10 +28,18 @@ class CheckoutPage extends StatelessWidget {
       final serviceFee = (subtotal * 0.1).round();
       final total = subtotal + deliveryFee + serviceFee;
 
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final addressProv = Provider.of<AddressProvider>(context, listen: false);
+      final userId = auth.userId ?? 'guest';
+      final userName = auth.userName ?? addressProv.defaultAddress?.fullName ?? 'Guest';
+      final userEmail = auth.email ?? '';
+      final userPhone = addressProv.defaultAddress?.phoneNumber ?? '';
+
       final orderData = {
-        'userId': 'user123',
-        'userName': 'User Name',
-        'userPhone': '0123456789',
+        'userId': userId,
+        'userName': userName,
+        'userEmail': userEmail,
+        'userPhone': userPhone,
         'items': cartProvider.items
             .map((item) => {
                   'name': item.name,

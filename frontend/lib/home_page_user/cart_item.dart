@@ -23,8 +23,18 @@ class CartItem {
     this.userNote,
   });
 
-  // Price is same for all sizes
-  int get price => basePrice;
+  // Compute unit price based on selected size
+  int get price {
+    switch (size) {
+      case 'M':
+        return (basePrice * 1.3).round();
+      case 'L':
+        return (basePrice * 1.6).round();
+      case 'S':
+      default:
+        return basePrice;
+    }
+  }
 
   int get totalPrice => price * quantity;
 

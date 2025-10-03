@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import '../auth/auth_provider.dart';
 import '../home_page_user/shipper_home.dart';
 import '../home_page_user/admin_home.dart';
 
@@ -37,15 +39,21 @@ class _LoginFormPageState extends State<LoginFormPage> {
 
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
-        // Persist minimal profile for later prefill
+        // Save minimal profile to AuthProvider
         try {
-          // A lightweight storage using shared_preferences would be ideal;
-          // for demo we use Navigator arguments in next route
+          final user = body['user'] ?? {};
+          final id = (user['id'] ?? user['_id'] ?? '').toString();
+          final email = (user['email'] ?? '').toString();
+          final name = (user['name'] ?? '').toString();
+          if (id.isNotEmpty) {
+            Provider.of<AuthProvider>(context, listen: false)
+                .setUser(id: id, name: name, email: email);
+          }
         } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Welcome ${body['user']['name'] ?? ''}')),
         );
-        // Pass user info to PermissionPage so downstream screens can access
+        // Navigate by role
         final role = (body['user']['role'] ?? 'user').toString();
         if (role == 'shipper') {
           Navigator.pushReplacement(

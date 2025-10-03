@@ -9,6 +9,7 @@ import 'splash/splash_page.dart';
 import 'home_page_user/cart_provider.dart';
 import 'home_page_user/address_provider.dart';
 import 'home_page_user/recent_provider.dart';
+import 'auth/auth_provider.dart';
 
 void main() {
   runApp(FoodDeliveryApp());
@@ -22,6 +23,7 @@ class FoodDeliveryApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CartProvider()),
         ChangeNotifierProvider(create: (context) => AddressProvider()),
         ChangeNotifierProvider(create: (context) => RecentProvider()),
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
       ],
       child: MaterialApp(
         title: 'Food Delivery',
