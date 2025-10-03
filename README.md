@@ -120,7 +120,7 @@ flutter run -d ios
     ward: String,
     city: String
   },
-  role: String // 'user', 'chef', 'shipper', 'admin'
+  role: String // 'user', 'shipper', 'admin'
 }
 ```
 
