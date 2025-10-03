@@ -100,7 +100,6 @@ class _LoginFormPageState extends State<LoginFormPage> {
           );
         }
         await _persistCredentials(email: email, password: password);
-        Navigator.pushReplacementNamed(context, '/permissions');
       } else {
         final body = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(
