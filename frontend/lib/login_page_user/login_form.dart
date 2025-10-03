@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../auth/auth_provider.dart';
 import '../home_page_user/shipper_home.dart';
-import '../home_page_user/admin_home.dart';
+import '../admin/admin_dashboard_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginFormPage extends StatefulWidget {
@@ -85,7 +85,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
         } else if (role == 'admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const AdminHomePage()),
+            MaterialPageRoute(builder: (_) => const AdminDashboardPage()),
           );
         } else {
           Navigator.pushReplacementNamed(

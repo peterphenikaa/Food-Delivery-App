@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'admin_api.dart';
 import 'admin_food_list_page.dart';
 import 'admin_add_food_page.dart';
+import 'admin_food_detail_page.dart';
+import 'admin_notifications_page.dart';
+import 'admin_profile_page.dart';
 
 String formatCurrencyVND(double v) {
   final s = v.toStringAsFixed(0);
@@ -43,7 +46,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     'Hàng tuần': [],
     'Hàng tháng': [],
   };
-  int _tabIndex = 0; // 0: dashboard, 1: foods, 2: notifications, 3: account
+  int _tabIndex = 0; 
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +119,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final pages = <Widget>[
       dashboardPage,
       const AdminFoodListPage(),
-      const Center(child: Text('Thông báo')),
-      const Center(child: Text('Tài khoản')),
+      const AdminNotificationsPage(),
+      const AdminProfilePage(),
     ];
 
     return Scaffold(
@@ -771,7 +774,17 @@ class _TopFoodsListState extends State<_TopFoodsList> {
               ? 'assets/${f['image']}'
               : 'assets/homepageUser/restaurant_img1.jpg';
           final qty = (f['totalQuantity'] ?? 0) as int;
-          return _PopularItemCard(image: image, title: '$title (x$qty)');
+          return GestureDetector(
+            onTap: () async {
+              final changed = await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => AdminFoodDetailPage(food: f)),
+              );
+              if (changed == true) {
+                _load();
+              }
+            },
+            child: _PopularItemCard(image: image, title: '$title (x$qty)'),
+          );
         },
       ),
     );

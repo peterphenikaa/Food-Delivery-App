@@ -66,7 +66,8 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
 
   Future<void> _loadOrders({bool showNotification = false}) async {
     try {
-      final url = Uri.parse('$baseUrl/api/orders?status=PENDING');
+      // Backend đang dùng status dạng lowercase (requested/preparing/delivering/...)
+      final url = Uri.parse('$baseUrl/api/orders?status=requested');
       print('🔍 Shipper fetching orders: $url');
       final response = await http.get(url);
 

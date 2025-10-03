@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'admin_api.dart';
 
 class AdminAddFoodPage extends StatefulWidget {
-  const AdminAddFoodPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? initial; // if provided -> edit mode
+  const AdminAddFoodPage({Key? key, this.initial}) : super(key: key);
 
   @override
   State<AdminAddFoodPage> createState() => _AdminAddFoodPageState();
@@ -26,6 +27,17 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
   void initState() {
     super.initState();
     _api = AdminApi.fromDefaults();
+    // preload if editing
+    final init = widget.initial;
+    if (init != null) {
+      _name.text = (init['name'] ?? '').toString();
+      _price.text = ((init['price'] ?? 0) as num).toString();
+      _image.text = (init['image'] ?? '').toString();
+      _description.text = (init['description'] ?? '').toString();
+      _category.text = (init['category'] ?? '').toString();
+      final ingredients = (init['ingredients'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      _ingredientsInput.text = ingredients.join(', ');
+    }
   }
 
   @override
@@ -56,7 +68,11 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
         'description': _description.text.trim(),
         'ingredients': ingredients,
       };
-      await _api.createFood(body);
+      if (widget.initial != null && widget.initial!['_id'] != null) {
+        await _api.updateFood(widget.initial!['_id'].toString(), body);
+      } else {
+        await _api.createFood(body);
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã thêm món ăn thành công')),

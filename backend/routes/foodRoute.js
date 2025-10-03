@@ -53,6 +53,28 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Cập nhật món ăn
+router.put('/:id', async (req, res) => {
+  try {
+    const updated = await Food.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ error: 'Không tìm thấy món ăn' });
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Xóa món ăn
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await Food.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Không tìm thấy món ăn' });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // GET /api/foods/:id - Get single food item
 router.get('/:id', async (req, res) => {
   try {

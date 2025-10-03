@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'admin_api.dart';
+import 'admin_add_food_page.dart';
+import 'admin_food_detail_page.dart';
 
 class AdminFoodListPage extends StatefulWidget {
   const AdminFoodListPage({Key? key}) : super(key: key);
@@ -129,6 +131,44 @@ class _AdminFoodListPageState extends State<AdminFoodListPage>
                             ratingText: rating,
                             reviewCount: reviews,
                             trailingText: 'Mang đi',
+                            onEdit: () async {
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => AdminAddFoodPage(initial: f),
+                                ),
+                              );
+                              _loadFoods(category: activeCategory == 'Tất cả' ? null : activeCategory);
+                            },
+                            onDelete: () async {
+                              final ok = await showDialog<bool>(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: const Text('Xóa món?'),
+                                  content: Text('Bạn có chắc muốn xóa "$title"?'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
+                                    TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xóa')),
+                                  ],
+                                ),
+                              );
+                              if (ok == true) {
+                                try {
+                                  await _api.deleteFood((f['_id'] ?? f['id']).toString());
+                                  _loadFoods(category: activeCategory == 'Tất cả' ? null : activeCategory);
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Đã xóa')));
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi xóa: $e')));
+                                }
+                              }
+                            },
+                            onTap: () async {
+                              final changed = await Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => AdminFoodDetailPage(food: f)),
+                              );
+                              if (changed == true) {
+                                _loadFoods(category: activeCategory == 'Tất cả' ? null : activeCategory);
+                              }
+                            },
                           );
                         },
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -150,6 +190,9 @@ class _FoodListTile extends StatelessWidget {
   final String ratingText;
   final int reviewCount;
   final String trailingText;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final VoidCallback? onTap;
 
   const _FoodListTile({
     Key? key,
@@ -160,11 +203,16 @@ class _FoodListTile extends StatelessWidget {
     required this.ratingText,
     required this.reviewCount,
     required this.trailingText,
+    this.onEdit,
+    this.onDelete,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -226,11 +274,29 @@ class _FoodListTile extends StatelessWidget {
             children: [
               Text(priceText, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 16),
-              Text(trailingText, style: const TextStyle(color: Colors.grey)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(trailingText, style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(width: 8),
+                  PopupMenuButton<String>(
+                    onSelected: (v) {
+                      if (v == 'edit') onEdit?.call();
+                      if (v == 'delete') onDelete?.call();
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'edit', child: Text('Sửa')),
+                      const PopupMenuItem(value: 'delete', child: Text('Xóa')),
+                    ],
+                    icon: const Icon(Icons.more_vert),
+                  ),
+                ],
+              ),
             ],
           )
         ],
       ),
+    ),
     );
   }
 }

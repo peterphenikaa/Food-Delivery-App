@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Order = require('../models/order');
 const Food = require('../models/food');
 const Restaurant = require('../models/restaurant');
+const Notification = require("../models/notification");
 
 // POST /api/orders - Create new order
 router.post('/', async (req, res) => {
@@ -283,12 +284,7 @@ router.get("/stats/top-foods", async (req, res) => {
     const pipeline = [
       { $match: { paymentStatus: "paid" } },
       { $unwind: "$items" },
-      {
-        $group: {
-          _id: { $ifNull: ["$items.food", "$items.foodId"] },
-          totalQuantity: { $sum: "$items.quantity" }
-        }
-      },
+      { $group: { _id: { $ifNull: ["$items.food", "$items.foodId"] }, totalQuantity: { $sum: "$items.quantity" } } },
       { $sort: { totalQuantity: -1 } },
       { $limit: limit },
       {
@@ -318,5 +314,37 @@ router.get("/stats/top-foods", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+// Simple endpoints to list notifications
+// GET /api/orders/notifications
+router.get('/notifications', async (req, res) => {
+  try {
+    const rows = await Notification.find({}).sort({ createdAt: -1 }).limit(50);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Helper to create notification when an order status changes
+async function createStatusNotification(order, newStatus) {
+  try {
+    const message = `Đơn ${order.orderId} đã chuyển sang trạng thái ${newStatus}`;
+    await Notification.create({ orderId: order.orderId, status: newStatus, message });
+  } catch (_) {}
+}
+
+// Example: update status endpoint (can be used by shipper/admin)
+// PUT /api/orders/:id/status { status: 'preparing' | 'delivering' | ... }
+router.put('/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!order) return res.status(404).json({ error: 'Không tìm thấy đơn hàng' });
+    await createStatusNotification(order, status);
+    res.json(order);
+  } catch (err) {
+    res.status(400).json({ error: 'Bad request' });
   }
 });

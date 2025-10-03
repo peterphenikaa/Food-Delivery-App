@@ -25,8 +25,8 @@ class AdminApi {
     }
     final data = json.decode(res.body) as Map<String, dynamic>;
     return AdminCounters(
-      running: (data['running'] ?? 0) as int,
-      requests: (data['requests'] ?? 0) as int,
+      running: (data['running'] ?? data['preparing'] ?? 0) as int,
+      requests: (data['requests'] ?? data['requested'] ?? 0) as int,
     );
   }
 
@@ -40,7 +40,8 @@ class AdminApi {
     final series = (data['series'] as List<dynamic>? ?? [])
         .map((e) => RevenuePoint(
               period: e['period'] as String,
-              total: (e['total'] as num).toDouble(),
+              // Backend hiện tại trả về 'totalAmount'; fallback sang 'total' nếu có
+              total: ((e['totalAmount'] ?? e['total']) as num).toDouble(),
               tooltip: (e['tooltip'] as String?) ?? '',
             ))
         .toList();
@@ -85,6 +86,34 @@ class AdminApi {
       throw Exception('Lỗi tạo món: ${res.statusCode} ${res.body}');
     }
     return json.decode(res.body) as Map<String, dynamic>;
+  }
+
+  Future<void> deleteFood(String id) async {
+    final res = await http.delete(Uri.parse('$baseUrl/api/foods/$id'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi xóa món: ${res.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> updateFood(String id, Map<String, dynamic> body) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/api/foods/$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(body),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi cập nhật món: ${res.statusCode}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchNotifications() async {
+    final res = await http.get(Uri.parse('$baseUrl/api/orders/notifications'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải thông báo: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as List<dynamic>;
+    return List<Map<String, dynamic>>.from(data);
   }
 }
 

@@ -10,13 +10,15 @@ const MONGO =
 function makeItem(food, qty) {
   const unit = Number(food.price) || 0;
   const quantity = qty;
-  const subtotal = unit * quantity;
+  const totalPrice = unit * quantity;
   return {
-    food: food._id,
+    foodId: food._id,
     name: food.name,
+    image: food.image || null,
+    size: 'M',
     quantity,
-    unitPrice: unit,
-    subtotal,
+    price: unit,
+    totalPrice,
   };
 }
 
@@ -32,11 +34,10 @@ async function run() {
 
   await Order.deleteMany({});
 
-  const address = (u) => ({
-    houseNumber: u.address?.houseNumber || "1",
-    ward: u.address?.ward || "Ward 1",
-    city: u.address?.city || "Ho Chi Minh",
-  });
+  const addressStr = (u) => {
+    const a = u.address || {};
+    return `${a.houseNumber || '1'}, ${a.ward || 'Ward 1'}, ${a.city || 'Ho Chi Minh'}`;
+  };
 
   const now = new Date();
   function shiftDays(d, n) {
@@ -45,71 +46,69 @@ async function run() {
     return x;
   }
 
+  function buildOrder({ user, items, status, note, createdShiftDays = 0 }) {
+    const subtotal = items.reduce((s, it) => s + (it.totalPrice || 0), 0);
+    const deliveryFee = 15000;
+    const serviceFee = Math.round(subtotal * 0.10); // 10% phí dịch vụ giống ví dụ
+    const total = subtotal + deliveryFee + serviceFee;
+    return {
+      orderId: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: String(user._id),
+      userName: user.name,
+      userPhone: user.phoneNumber || '0900000000',
+      items,
+      subtotal,
+      deliveryFee,
+      serviceFee,
+      total,
+      totalAmount: total, // phục vụ API doanh thu hiện tại
+      paymentStatus: 'paid',
+      deliveryAddress: addressStr(user),
+      estimatedDeliveryTime: '20-30 phút',
+      restaurantName: 'Uttora Coffee House',
+      restaurantAddress: '123 Main St',
+      note,
+      status,
+      createdAt: shiftDays(now, -createdShiftDays),
+      updatedAt: shiftDays(now, -createdShiftDays),
+    };
+  }
+
   const docs = [
-    // requested (order request - chưa chấp nhận)
-    {
-      user: users[0]._id,
+    buildOrder({
+      user: users[0],
       items: [makeItem(foods[0], 2), makeItem(foods[1], 1)],
-      deliveryAddress: address(users[0]),
-      status: "requested",
-      userNote: "Không cay, thêm tương cà",
-      totalQuantity: 3,
-      totalAmount: makeItem(foods[0], 2).subtotal + makeItem(foods[1], 1).subtotal,
-      paymentMethod: "cod",
-      paymentStatus: "paid",
-      paidAt: shiftDays(now, -1),
-      createdAt: shiftDays(now, -1),
-      updatedAt: shiftDays(now, -1),
-    },
-    // preparing (đơn đang xử lý)
-    {
-      user: users[0]._id,
+      status: 'requested',
+      note: 'Không cay, thêm tương cà',
+      createdShiftDays: 1,
+    }),
+    buildOrder({
+      user: users[0],
       items: [makeItem(foods[2], 1)],
-      deliveryAddress: address(users[0]),
-      status: "preparing",
-      userNote: "Giao nhanh giúp mình",
-      totalQuantity: 1,
-      totalAmount: makeItem(foods[2], 1).subtotal,
-      paymentMethod: "cod",
-      paymentStatus: "paid",
-      paidAt: shiftDays(now, -0),
-      createdAt: shiftDays(now, -0),
-      updatedAt: shiftDays(now, -0),
-    },
-    // completed (đã thanh toán) - dùng cho doanh thu
-    {
-      user: users[1]?._id || users[0]._id,
+      status: 'preparing',
+      note: 'Giao nhanh giúp mình',
+      createdShiftDays: 0,
+    }),
+    buildOrder({
+      user: users[1] || users[0],
       items: [makeItem(foods[3] || foods[0], 2)],
-      deliveryAddress: address(users[1] || users[0]),
-      status: "completed",
-      userNote: "",
-      totalQuantity: 2,
-      totalAmount: makeItem(foods[3] || foods[0], 2).subtotal,
-      paymentMethod: "card",
-      paymentStatus: "paid",
-      paidAt: shiftDays(now, -3),
-      createdAt: shiftDays(now, -3),
-      updatedAt: shiftDays(now, -2),
-    },
-    // delivering
-    {
-      user: users[1]?._id || users[0]._id,
+      status: 'completed',
+      note: '',
+      createdShiftDays: 3,
+    }),
+    buildOrder({
+      user: users[1] || users[0],
       items: [makeItem(foods[4] || foods[1], 1), makeItem(foods[5] || foods[2], 1)],
-      deliveryAddress: address(users[1] || users[0]),
-      status: "delivering",
-      userNote: "Gọi trước khi tới",
-      totalQuantity: 2,
-      totalAmount: makeItem(foods[4] || foods[1], 1).subtotal + makeItem(foods[5] || foods[2], 1).subtotal,
-      paymentMethod: "cod",
-      paymentStatus: "paid",
-      paidAt: shiftDays(now, -2),
-      createdAt: shiftDays(now, -2),
-      updatedAt: shiftDays(now, -2),
-    },
+      status: 'delivering',
+      note: 'Gọi trước khi tới',
+      createdShiftDays: 2,
+    }),
   ];
 
-  const created = await Order.insertMany(docs);
-  console.log("Inserted orders:", created.map((o) => `${o.status}:${o.totalAmount}`));
+  // Use raw collection insert to bypass Mongoose validation/strict, so we can
+  // store fields like totalAmount and lowercase status that backend routes expect.
+  const result = await Order.collection.insertMany(docs, { ordered: true });
+  console.log("Inserted orders:", Object.values(result.insertedIds).length);
 
   await mongoose.disconnect();
   console.log("Disconnected");
