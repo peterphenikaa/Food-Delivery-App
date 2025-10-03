@@ -1,60 +1,423 @@
-🍔 Food Delivery App
+# 🍔 Food Delivery App
 
-Một ứng dụng giao đồ ăn trực tuyến, kết nối User, Chef và Shipper với trải nghiệm realtime đầy đủ.
+Một ứng dụng giao đồ ăn trực tuyến hoàn chỉnh với Flutter frontend và Node.js backend, kết nối User, Chef và Shipper với trải nghiệm realtime đầy đủ.
 
-🔹 Giới thiệu
+## 📱 Tổng quan
 
 Dự án Food Delivery App mô phỏng quy trình đặt món – nấu – giao với các tính năng:
+- Quản lý tài khoản User, Chef và Shipper
+- Quản lý sản phẩm, giỏ hàng và thanh toán
+- Chat thời gian thực giữa khách hàng và Shipper
+- Cập nhật vị trí Shipper trên bản đồ realtime
+- Thiết kế giao diện tham khảo từ Figma
 
-Quản lý tài khoản User, Chef và Shipper.
+## 🛠️ Công nghệ sử dụng
 
-Quản lý sản phẩm, giỏ hàng và thanh toán.
+### Frontend
+- **Flutter** 3.9.0+ (Dart SDK)
+- **Provider** - State management
+- **HTTP** - API calls
+- **Shared Preferences** - Local storage
+- **Geolocator** - Location services
+- **Permission Handler** - Device permissions
 
-Chat thời gian thực giữa khách hàng và Shipper.
+### Backend
+- **Node.js** + **Express.js**
+- **MongoDB** - Database
+- **Redis** - Caching
+- **CORS** - Cross-origin requests
+- **Mongoose** - ODM
 
-Cập nhật vị trí Shipper trên bản đồ realtime.
+## 📊 Thống kê dự án
 
-Thiết kế giao diện tham khảo từ Figma: Link Figma : https://www.figma.com/design/3xanvnmDn6GOyTDaOAzxdC/Food-Delivery-App--Community-?node-id=601-1128
+- **Tổng số dòng code**: 13,671 dòng
+- **Frontend (Flutter)**: 10,342 dòng (34 files)
+- **Backend (Node.js)**: 1,496 dòng (21 files)
+- **Platform configs**: 333 dòng (21 files)
+- **Config files**: 1,500 dòng (9 files)
 
-⚡ Các tính năng chính
-Task 1: Quản lý tài khoản & Chef
+## 🚀 Cài đặt và chạy dự án
 
-Giao diện đăng nhập/đăng ký cho User và Chef.
+### Yêu cầu hệ thống
 
-Chef Dashboard: nhận đơn, quản lý món ăn, cập nhật sản phẩm.
+- **Node.js** 16.0+ 
+- **Flutter** 3.9.0+
+- **MongoDB** 4.4+
+- **Redis** 6.0+ (optional)
+- **Git**
 
-Shipper Account: theo dõi đơn hàng, lịch sử giao hàng.
+### 1. Clone repository
 
-Task 2: Giao diện Client & Giỏ hàng
+```bash
+git clone <repository-url>
+cd Food-Delivery-App
+```
 
-Trang chủ hiển thị danh sách sản phẩm với bộ lọc thông minh.
+### 2. Cài đặt Backend
 
-Trang chi tiết sản phẩm với mô tả, đánh giá và nút thêm vào giỏ hàng.
+```bash
+cd backend
+npm install
+```
 
-Giỏ hàng: CRUD đầy đủ, hiển thị tổng giá, số lượng, chỉnh sửa và xóa món.
+#### Cấu hình môi trường
 
-Thanh toán: tích hợp cơ chế thanh toán an toàn.
+Tạo file `.env` trong thư mục `backend`:
 
-Database: quản lý người dùng, sản phẩm, giỏ hàng, đơn hàng và thanh toán.
+```env
+# Database
+MONGO_URL=mongodb://localhost:27017/FoodDeliveryApp
+# hoặc MongoDB Atlas
+# MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/FoodDeliveryApp
 
-Task 3: Chat & Realtime Shipper
+# Redis (optional)
+REDIS_URL=redis://localhost:6379
 
-Chat realtime giữa khách hàng và Shipper.
+# Server
+PORT=3000
+```
 
-Bản đồ realtime: cập nhật vị trí Shipper trong quá trình giao hàng.
+#### Chạy Backend
 
-Thông báo trạng thái đơn: tự động cập nhật từ Chef & Shipper.
+```bash
+# Development mode
+npm run dev
 
-🛠️ Công nghệ sử dụng
+# Production mode
+npm start
 
-Frontend: ReactJS / VueJS/ Flutter
+# Seed dữ liệu mẫu
+npm run seed
+```
 
-Backend: Node.js / Express / NestJS
+Backend sẽ chạy tại: `http://localhost:3000`
 
-Realtime: Socket.IO
+### 3. Cài đặt Frontend
 
-Database: MongoDB
+```bash
+cd frontend
+flutter pub get
+```
 
-Thanh toán: Stripe / PayPal
+#### Chạy Frontend
 
-Bản đồ: Google Maps API / Mapbox
+```bash
+# Chạy trên web
+flutter run -d chrome
+
+# Chạy trên Android
+flutter run
+
+# Chạy trên iOS
+flutter run -d ios
+```
+
+## 🗄️ Cấu trúc Database
+
+### Models chính
+
+#### User/Login
+```javascript
+{
+  email: String,
+  password: String,
+  name: String,
+  phoneNumber: String,
+  address: {
+    houseNumber: String,
+    ward: String,
+    city: String
+  },
+  role: String // 'user', 'chef', 'shipper', 'admin'
+}
+```
+
+#### Restaurant
+```javascript
+{
+  name: String,
+  address: String,
+  phone: String,
+  rating: Number,
+  deliveryTime: Number,
+  image: String
+}
+```
+
+#### Food
+```javascript
+{
+  name: String,
+  image: String,
+  description: String,
+  category: String,
+  price: Number,
+  restaurantId: ObjectId,
+  isAvailable: Boolean,
+  rating: Number,
+  deliveryTime: Number,
+  reviews: [ReviewSchema]
+}
+```
+
+#### Order
+```javascript
+{
+  orderId: String,
+  userId: String,
+  userName: String,
+  userPhone: String,
+  items: [OrderItemSchema],
+  subtotal: Number,
+  deliveryFee: Number,
+  serviceFee: Number,
+  total: Number,
+  deliveryAddress: String,
+  note: String,
+  status: String, // 'PENDING', 'ASSIGNED', 'PICKED_UP', 'DELIVERING', 'DELIVERED', 'CANCELLED'
+  shipperId: ObjectId,
+  shipperName: String,
+  restaurantName: String,
+  restaurantAddress: String,
+  estimatedDeliveryTime: String
+}
+```
+
+## 🔌 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Đăng ký tài khoản
+- `POST /api/auth/login` - Đăng nhập
+- `GET /api/auth/users/:id` - Lấy thông tin user
+- `GET /api/auth/profile` - Lấy profile user hiện tại
+
+### Restaurants
+- `GET /api/restaurants` - Lấy danh sách nhà hàng
+- `GET /api/restaurants/:id` - Lấy chi tiết nhà hàng
+
+### Foods
+- `GET /api/foods` - Lấy danh sách món ăn
+- `GET /api/foods/search?q=keyword` - Tìm kiếm món ăn
+- `GET /api/foods/category/:category` - Lấy món theo danh mục
+- `GET /api/foods/restaurant/:restaurantId` - Lấy món theo nhà hàng
+
+### Orders
+- `POST /api/orders` - Tạo đơn hàng mới
+- `GET /api/orders` - Lấy danh sách đơn hàng
+- `GET /api/orders/:id` - Lấy chi tiết đơn hàng
+- `PUT /api/orders/:id/status` - Cập nhật trạng thái đơn hàng
+- `PUT /api/orders/:id/assign` - Gán shipper cho đơn hàng
+
+### Addresses
+- `GET /api/addresses/:userId` - Lấy địa chỉ của user
+- `POST /api/addresses` - Thêm địa chỉ mới
+- `PUT /api/addresses/:id` - Cập nhật địa chỉ
+- `DELETE /api/addresses/:id` - Xóa địa chỉ
+
+### Location
+- `POST /api/location/geocode` - Chuyển đổi tọa độ thành địa chỉ
+- `POST /api/location/reverse-geocode` - Chuyển đổi địa chỉ thành tọa độ
+
+## 🎯 Tính năng chính
+
+### 👤 Quản lý tài khoản
+- Đăng ký/Đăng nhập cho User, Chef, Shipper
+- Quản lý profile và địa chỉ
+- Phân quyền theo vai trò
+
+### 🏪 Quản lý nhà hàng & món ăn
+- Danh sách nhà hàng với rating và thời gian giao
+- Tìm kiếm món ăn theo tên, danh mục
+- Chi tiết món ăn với hình ảnh, mô tả, đánh giá
+- Quản lý món ăn cho Chef
+
+### 🛒 Giỏ hàng & Thanh toán
+- Thêm/sửa/xóa món trong giỏ hàng
+- Tính toán phí giao hàng và phí dịch vụ
+- Thanh toán an toàn
+- Lưu trữ giỏ hàng local
+
+### 📦 Quản lý đơn hàng
+- Tạo đơn hàng từ giỏ hàng
+- Theo dõi trạng thái đơn hàng realtime
+- Gán shipper cho đơn hàng
+- Cập nhật vị trí giao hàng
+
+### 🗺️ Dịch vụ vị trí
+- Lấy vị trí hiện tại
+- Tìm kiếm địa chỉ
+- Chuyển đổi tọa độ ↔ địa chỉ
+- Quản lý nhiều địa chỉ giao hàng
+
+### 💬 Chat & Thông báo
+- Chat realtime giữa khách hàng và shipper
+- Thông báo trạng thái đơn hàng
+- Cập nhật vị trí shipper trên bản đồ
+
+## 🧪 Testing
+
+### Test Backend API
+
+```bash
+cd backend
+
+# Test với curl
+curl http://localhost:3000/api/restaurants
+curl http://localhost:3000/api/foods
+
+# Test tạo đơn hàng
+curl -X POST http://localhost:3000/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "userName": "Test User",
+    "userPhone": "0123456789",
+    "items": [{"foodId": "food_id", "name": "Pizza", "quantity": 1, "price": 100000}],
+    "subtotal": 100000,
+    "total": 115000,
+    "deliveryAddress": "123 Test Street"
+  }'
+```
+
+### Test Frontend
+
+```bash
+cd frontend
+
+# Chạy tests
+flutter test
+
+# Chạy integration tests
+flutter drive --target=test_driver/app.dart
+```
+
+### Test Database
+
+```bash
+# Kết nối MongoDB
+mongosh mongodb://localhost:27017/FoodDeliveryApp
+
+# Xem collections
+show collections
+
+# Xem dữ liệu
+db.restaurants.find()
+db.foods.find()
+db.orders.find()
+```
+
+## 📱 Screenshots
+
+### Màn hình chính
+- Trang chủ với danh sách nhà hàng
+- Tìm kiếm và lọc món ăn
+- Chi tiết món ăn
+- Giỏ hàng
+
+### Quản lý đơn hàng
+- Tạo đơn hàng
+- Theo dõi trạng thái
+- Chat với shipper
+- Bản đồ theo dõi
+
+## 🔧 Troubleshooting
+
+### Lỗi thường gặp
+
+#### Backend không kết nối được MongoDB
+```bash
+# Kiểm tra MongoDB đang chạy
+sudo systemctl status mongod
+
+# Khởi động MongoDB
+sudo systemctl start mongod
+```
+
+#### Frontend không kết nối được API
+- Kiểm tra backend đang chạy tại port 3000
+- Kiểm tra CORS settings
+- Kiểm tra network configuration cho Android emulator
+
+#### Lỗi permissions trên mobile
+- Cấp quyền location cho app
+- Cấp quyền camera cho chụp ảnh
+- Cấp quyền storage cho lưu trữ
+
+### Debug
+
+```bash
+# Backend logs
+cd backend && npm run dev
+
+# Frontend logs
+cd frontend && flutter run --verbose
+
+# Database logs
+mongosh --eval "db.setLogLevel(2)"
+```
+
+## 📈 Performance
+
+### Optimization đã áp dụng
+- Lazy loading cho danh sách món ăn
+- Caching với Redis
+- Image optimization
+- State management với Provider
+- Database indexing
+
+### Monitoring
+- API response time
+- Database query performance
+- Memory usage
+- Network requests
+
+## 🚀 Deployment
+
+### Backend (Heroku/Railway/DigitalOcean)
+```bash
+# Tạo Procfile
+echo "web: node server.js" > Procfile
+
+# Deploy
+git push heroku main
+```
+
+### Frontend (Firebase/Netlify)
+```bash
+# Build web
+flutter build web
+
+# Deploy
+firebase deploy
+```
+
+## 🤝 Contributing
+
+1. Fork repository
+2. Tạo feature branch: `git checkout -b feature/AmazingFeature`
+3. Commit changes: `git commit -m 'Add some AmazingFeature'`
+4. Push to branch: `git push origin feature/AmazingFeature`
+5. Tạo Pull Request
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## 👥 Authors
+
+- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
+
+## 🙏 Acknowledgments
+
+- Flutter team cho framework tuyệt vời
+- MongoDB team cho database mạnh mẽ
+- Node.js community cho ecosystem phong phú
+- Figma design community cho inspiration
+
+---
+
+**📞 Liên hệ**: [your-email@example.com](mailto:your-email@example.com)
+
+**🌐 Website**: [https://your-website.com](https://your-website.com)
+
+**📱 Download**: [Google Play Store](https://play.google.com/store) | [App Store](https://apps.apple.com)
