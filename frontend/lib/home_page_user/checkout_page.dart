@@ -42,6 +42,7 @@ class CheckoutPage extends StatelessWidget {
         'userPhone': userPhone,
         'items': cartProvider.items
             .map((item) => {
+                  'foodId': item.foodId ?? item.id, // Use foodId for restaurant lookup
                   'name': item.name,
                   'image': item.image,
                   'size': item.size,
@@ -56,8 +57,7 @@ class CheckoutPage extends StatelessWidget {
         'total': total,
         'deliveryAddress': deliveryAddress,
         'estimatedDeliveryTime': '20-30 phút',
-        'restaurantName': 'Uttora Coffee House',
-        'restaurantAddress': '123 Main St',
+        // Removed hardcoded restaurant info - backend will fetch from foodId
       };
 
       print('🚀 Creating order: ${json.encode(orderData)}');

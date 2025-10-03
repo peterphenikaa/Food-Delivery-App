@@ -1,5 +1,6 @@
 class CartItem {
   final String id;
+  final String? foodId; // MongoDB ObjectId of the food item
   final String name;
   final String? image;
   final int basePrice;
@@ -12,6 +13,7 @@ class CartItem {
 
   CartItem({
     required this.id,
+    this.foodId,
     required this.name,
     this.image,
     required this.basePrice,
@@ -40,6 +42,7 @@ class CartItem {
 
   CartItem copyWith({
     String? id,
+    String? foodId,
     String? name,
     String? image,
     int? basePrice,
@@ -51,6 +54,7 @@ class CartItem {
   }) {
     return CartItem(
       id: id ?? this.id,
+      foodId: foodId ?? this.foodId,
       name: name ?? this.name,
       image: image ?? this.image,
       basePrice: basePrice ?? this.basePrice,
@@ -65,6 +69,7 @@ class CartItem {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'foodId': foodId,
       'name': name,
       'image': image,
       'basePrice': basePrice,
@@ -79,6 +84,7 @@ class CartItem {
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       id: json['id'],
+      foodId: json['foodId'],
       name: json['name'],
       image: json['image'],
       basePrice: json['basePrice'],

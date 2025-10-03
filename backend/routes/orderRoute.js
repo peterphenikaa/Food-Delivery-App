@@ -3,14 +3,40 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Order = require('../models/order');
 const Message = require('../models/message');
+const Food = require('../models/food');
+const Restaurant = require('../models/restaurant');
 
 // POST /api/orders - Create new order
 router.post('/', async (req, res) => {
   try {
-    const { userId, userName, userPhone, items, subtotal, deliveryFee, serviceFee, total, deliveryAddress, note, estimatedDeliveryTime, restaurantName, restaurantAddress } = req.body;
+    const { userId, userName, userPhone, items, subtotal, deliveryFee, serviceFee, total, deliveryAddress, note, estimatedDeliveryTime } = req.body;
     
     if (!userId || !userName || !userPhone || !items || !total || !deliveryAddress) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Get restaurant info from the first food item's restaurantId
+    let restaurantName = 'Unknown Restaurant';
+    let restaurantAddress = 'Unknown Address';
+
+    if (items && items.length > 0) {
+      try {
+        // Get the first food item to find restaurantId
+        const firstItem = items[0];
+        if (firstItem.foodId) {
+          const food = await Food.findById(firstItem.foodId);
+          if (food && food.restaurantId) {
+            const restaurant = await Restaurant.findById(food.restaurantId);
+            if (restaurant) {
+              restaurantName = restaurant.name;
+              restaurantAddress = restaurant.address;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching restaurant info:', err);
+        // Use default values if restaurant lookup fails
+      }
     }
 
     const orderId = `ORD${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;

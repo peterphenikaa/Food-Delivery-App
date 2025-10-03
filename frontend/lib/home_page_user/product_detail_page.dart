@@ -53,6 +53,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   String userNote = '';
   final TextEditingController noteController = TextEditingController();
+  
+  // Restaurant info
+  Map<String, dynamic>? restaurantInfo;
+  bool restaurantLoading = false;
 
   int get currentPrice {
     int base = (widget.product['price'] ?? 0) as int;
@@ -91,6 +95,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
     });
     fetchReviews();
+    fetchRestaurantInfo();
   }
 
   Future<void> fetchReviews() async {
@@ -117,6 +122,77 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
     } catch (_) {}
     setState(() => reviewsLoading = false);
+  }
+
+  Future<void> fetchRestaurantInfo() async {
+    setState(() => restaurantLoading = true);
+    final String baseUrl = kIsWeb
+        ? 'http://localhost:3000'
+        : (defaultTargetPlatform == TargetPlatform.android
+        ? 'http://10.0.2.2:3000'
+        : 'http://localhost:3000');
+    
+    try {
+      // First get the food details to get restaurantId
+      final rawId = widget.product['_id'] ?? widget.product['id'];
+      final String productId = rawId is Map
+          ? (rawId['_id'] ?? rawId['\$oid'] ?? rawId.toString())
+          : (rawId?.toString() ?? '');
+      
+      print('[fetchRestaurantInfo] Product ID: $productId');
+      print('[fetchRestaurantInfo] Raw product data: ${widget.product}');
+      
+      final foodUrl = Uri.parse('$baseUrl/api/foods/$productId');
+      print('[fetchRestaurantInfo] Food URL: $foodUrl');
+      final foodResp = await http.get(foodUrl).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Food API timeout');
+        },
+      );
+      
+      print('[fetchRestaurantInfo] Food response status: ${foodResp.statusCode}');
+      print('[fetchRestaurantInfo] Food response body: ${foodResp.body}');
+      
+      if (foodResp.statusCode == 200) {
+        final foodData = json.decode(foodResp.body);
+        final restaurantId = foodData['restaurantId'];
+        print('[fetchRestaurantInfo] Restaurant ID: $restaurantId');
+        
+        if (restaurantId != null) {
+          // Get restaurant details
+          final restaurantUrl = Uri.parse('$baseUrl/api/restaurants/$restaurantId');
+          print('[fetchRestaurantInfo] Restaurant URL: $restaurantUrl');
+          final restaurantResp = await http.get(restaurantUrl).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw Exception('Restaurant API timeout');
+            },
+          );
+          
+          print('[fetchRestaurantInfo] Restaurant response status: ${restaurantResp.statusCode}');
+          print('[fetchRestaurantInfo] Restaurant response body: ${restaurantResp.body}');
+          
+          if (restaurantResp.statusCode == 200) {
+            final restaurantData = json.decode(restaurantResp.body);
+            print('[fetchRestaurantInfo] Restaurant data: $restaurantData');
+            setState(() {
+              restaurantInfo = restaurantData;
+            });
+          } else {
+            print('[fetchRestaurantInfo] Failed to get restaurant: ${restaurantResp.statusCode}');
+          }
+        } else {
+          print('[fetchRestaurantInfo] No restaurantId found in food data');
+        }
+      } else {
+        print('[fetchRestaurantInfo] Failed to get food: ${foodResp.statusCode}');
+      }
+    } catch (e) {
+      print('[fetchRestaurantInfo] Error: $e');
+    }
+    
+    setState(() => restaurantLoading = false);
   }
 
   Future<void> postReview(int rating, String comment) async {
@@ -166,12 +242,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     final cartItem = CartItem(
       id: item['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      foodId: item['_id'] ?? item['id'], // Use MongoDB _id as foodId
       name: item['name'] ?? '',
       image: item['image'],
       basePrice: (item['price'] ?? 0) as int,
       size: selectedSize,
       quantity: quantity,
-      restaurant: 'Uttora Coffee House',
+      restaurant: restaurantInfo?['name'] ?? 'Unknown Restaurant',
       category: item['category'] ?? '',
       description: item['description'],
       userNote: userNote,
@@ -290,16 +367,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           CircleAvatar(
                             radius: 10,
                             backgroundColor: Colors.redAccent,
                           ),
                           SizedBox(width: 8),
-                          Text(
-                            'Uttora Coffee House',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
+                          if (restaurantLoading)
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          else
+                            Text(
+                              restaurantInfo?['name'] ?? 'Restaurant',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
                         ],
                       ),
                     ),
