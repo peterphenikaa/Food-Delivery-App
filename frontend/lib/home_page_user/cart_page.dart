@@ -533,7 +533,7 @@ class _CartItemCard extends StatelessWidget {
               child: ClipOval(
                 child: item.image != null
                     ? Image.asset(
-                        'assets/${item.image}',
+                        '${item.image}',
                         fit: BoxFit.cover,
                       )
                     : const Icon(

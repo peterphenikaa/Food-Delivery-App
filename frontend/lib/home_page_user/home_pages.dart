@@ -164,8 +164,9 @@ class _HomePageState extends State<HomePage> {
                   return Row(
                     children: [
                       CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Colors.grey[300],
+                        radius: 20,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: AssetImage('homepageUser/user_icon.jpg'),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -339,13 +340,14 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16),
 
               SizedBox(
-                height: 80,
+                height: 95,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
                     CategoryButton(
-                      icon: Icons.fastfood,
+                      icon: Icons.restaurant_menu,
                       label: "Tất cả danh mục",
+                      color: Color(0xFFFF6B6B),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -359,6 +361,7 @@ class _HomePageState extends State<HomePage> {
                     CategoryButton(
                       icon: Icons.lunch_dining,
                       label: "Burger",
+                      color: Color(0xFFFF8C42),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -371,6 +374,7 @@ class _HomePageState extends State<HomePage> {
                     CategoryButton(
                       icon: Icons.local_pizza,
                       label: "Pizza",
+                      color: Color(0xFFE74C3C),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -381,8 +385,9 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     CategoryButton(
-                      icon: Icons.lunch_dining,
+                      icon: Icons.set_meal,
                       label: "Sandwich",
+                      color: Color(0xFFF39C12),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -394,8 +399,9 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     CategoryButton(
-                      icon: Icons.set_meal,
+                      icon: Icons.dining,
                       label: "Hot Dog",
+                      color: Color(0xFFE67E22),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -409,6 +415,7 @@ class _HomePageState extends State<HomePage> {
                     CategoryButton(
                       icon: Icons.fastfood,
                       label: "Fast Food",
+                      color: Color(0xFF3498DB),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -420,8 +427,9 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     CategoryButton(
-                      icon: Icons.emoji_food_beverage,
+                      icon: Icons.eco,
                       label: "Salad",
+                      color: Color(0xFF27AE60),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -484,8 +492,8 @@ class _HomePageState extends State<HomePage> {
                 ...restaurants.take(2).map((restaurant) {
                   return RestaurantCard(
                     imagePath: restaurant['image'] != null
-                        ? 'assets/${restaurant['image']}'
-                        : 'assets/homepageUser/restaurant_img1.jpg',
+                        ? '${restaurant['image']}'
+                        : 'homepageUser/restaurant_img1.jpg',
                     name: restaurant['name'] ?? 'Restaurant',
                     tags: (restaurant['categories'] as List?)?.join(' - ') ?? 'Food',
                     rating: (restaurant['rating'] ?? 4.7).toDouble(),
@@ -530,19 +538,51 @@ class CategoryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: GestureDetector(
         onTap: onTap,
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 21,
-              backgroundColor: color.withOpacity(0.15),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(height: 3),
-            Text(label, style: const TextStyle(fontSize: 13)),
-          ],
+        child: SizedBox(
+          width: 64,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color.withOpacity(0.8), color],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 26),
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 28,
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -571,7 +611,8 @@ class RestaurantCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 1,
+        elevation: 3,
+        shadowColor: Colors.black.withOpacity(0.15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,18 +621,32 @@ class RestaurantCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(14),
               ),
-              child: Image.asset(
-                imagePath,
-                height: 110,
+              child: Container(
+                height: 200,
                 width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 110,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.restaurant, size: 50),
-                  );
-                },
+                color: Colors.grey[50],
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.matrix([
+                    1.2, 0, 0, 0, 10,    // Red channel - tăng brightness
+                    0, 1.2, 0, 0, 10,    // Green channel
+                    0, 0, 1.2, 0, 10,    // Blue channel
+                    0, 0, 0, 1, 0,       // Alpha channel
+                  ]),
+                  child: Image.asset(
+                    imagePath,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.restaurant, size: 50),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
             Padding(

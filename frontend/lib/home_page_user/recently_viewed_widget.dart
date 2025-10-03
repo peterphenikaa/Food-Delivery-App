@@ -47,7 +47,7 @@ class RecentlyViewedWidget extends StatelessWidget {
                           SizedBox(
                             height: 60,
                             child: Image.asset(
-                              'assets/${item['image']}',
+                              '${item['image']}',
                               fit: BoxFit.cover,
                             ),
                           ),

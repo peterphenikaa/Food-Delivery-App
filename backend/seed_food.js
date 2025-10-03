@@ -1,4 +1,4 @@
-erequire("dotenv").config();
+require("dotenv").config();
 const mongoose = require("mongoose");
 const Food = require("./models/food");
 
@@ -21,7 +21,7 @@ async function run() {
       name: "Burger Classic",
       category: "Burger",
       price: 35000,
-      image: "assets/homepageUser/burger_img1.jpg",
+      image: "homepageUser/burger_classic.jpg",
       description: "Burger thịt bò ngon với rau xanh tươi và sốt đặc biệt",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -36,7 +36,7 @@ async function run() {
       name: "Pepperoni Pizza",
       category: "Pizza",
       price: 89000,
-      image: "restaurant_img1.jpg",
+      image: "homepageUser/pepperoni_pizza.jpg",
       description: "Pizza pepperoni với phô mai mozzarella thơm ngon",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -50,7 +50,7 @@ async function run() {
       name: "Chicken Sandwich",
       category: "Sandwich",
       price: 45000,
-      image: "restaurant_img2.jpg",
+      image: "homepageUser/chicken_sandwich.jpg",
       description: "Sandwich gà nướng với rau tươi và sốt mayonnaise",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -61,7 +61,7 @@ async function run() {
       name: "Hot Dog Special",
       category: "Hot Dog",
       price: 25000,
-      image: "restaurant_img2.jpg",
+      image: "homepageUser/hot_dog_special.jpg",
       description: "Hot dog đặc biệt với xúc xích Đức và tương cà",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -72,7 +72,7 @@ async function run() {
       name: "Combo Fast Food",
       category: "Fast Food",
       price: 99000,
-      image: "restaurant_img1.jpg",
+      image: "homepageUser/combo_fast_food.jpg",
       description: "Combo gồm burger, khoai tây chiên và nước ngọt",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -83,7 +83,7 @@ async function run() {
       name: "Caesar Salad",
       category: "Salad",
       price: 52000,
-      image: "restaurant_img2.jpg",
+      image: "homepageUser/caesar_salad.jpg",
       description: "Salad Caesar với rau xà lách tươi và sốt Caesar đặc biệt",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -94,7 +94,7 @@ async function run() {
       name: "Beef Steak",
       category: "Fast Food",
       price: 120000,
-      image: "restaurant_img1.jpg",
+      image: "homepageUser/beef_steak.webp",
       description: "Bít tết thịt bò Úc nướng vừa chín tới",
       restaurantId: restaurantMongoId,
       isAvailable: true,
@@ -105,12 +105,40 @@ async function run() {
       name: "Fish and Chips",
       category: "Fast Food",
       price: 65000,
-      image: "restaurant_img2.jpg",
+      image: "homepageUser/fish_and_chips.jpg",
       description: "Cá chiên giòn với khoai tây chiên kiểu Anh",
       restaurantId: restaurantMongoId,
       isAvailable: true,
       rating: 4.1,
       deliveryTime: 25,
+    },
+    {
+      name: "European Pizza",
+      category: "Pizza",
+      price: 95000,
+      image: "homepageUser/european_pizza.jpg",
+      description: "Pizza phong cách Châu Âu với hương vị độc đáo và tinh tế",
+      restaurantId: restaurantMongoId,
+      isAvailable: true,
+      rating: 4.7,
+      deliveryTime: 30,
+      reviews: [
+        { user: 'Emma', rating: 5, comment: 'Pizza phong cách Châu Âu tuyệt vời!', createdAt: new Date() }
+      ],
+    },
+    {
+      name: "Buffalo Pizza",
+      category: "Pizza",
+      price: 92000,
+      image: "homepageUser/buffano_pizza.jpg",
+      description: "Pizza Buffalo với phô mai mozzarella và sốt cay đặc biệt",
+      restaurantId: restaurantMongoId,
+      isAvailable: true,
+      rating: 4.8,
+      deliveryTime: 28,
+      reviews: [
+        { user: 'John', rating: 5, comment: 'Pizza Buffalo cay ngon tuyệt!', createdAt: new Date() }
+      ],
     },
   ];
 

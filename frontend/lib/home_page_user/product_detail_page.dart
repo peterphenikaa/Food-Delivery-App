@@ -259,7 +259,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   alignment: Alignment.center,
                   child: item['image'] != null
                       ? Image.asset(
-                    'assets/${item['image']}',
+                    '${item['image']}',
                     fit: BoxFit.contain,
                     height: 150,
                   )
@@ -517,7 +517,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 .map(
                                   (rv) => ListTile(
                                 leading: CircleAvatar(
-                                  child: Icon(Icons.person),
+                                  radius: 20,
+                                  backgroundColor: Colors.grey[200],
+                                  backgroundImage: AssetImage('homepageUser/user_icon.jpg'),
                                 ),
                                 title: Row(
                                   children: [

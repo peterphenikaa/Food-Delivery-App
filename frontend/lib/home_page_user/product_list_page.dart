@@ -469,7 +469,7 @@ class _ProductCard extends StatelessWidget {
                   Center(
                     child: product['image'] != null
                         ? Image.asset(
-                            'assets/${product['image']}',
+                            '${product['image']}',
                             height: 100,
                             fit: BoxFit.contain,
                           )

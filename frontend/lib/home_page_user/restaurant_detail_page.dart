@@ -311,7 +311,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                     ),
                     child: widget.restaurant['image'] != null
                         ? Image.asset(
-                            'assets/${widget.restaurant['image']}',
+                            '${widget.restaurant['image']}',
                             fit: BoxFit.cover,
                           )
                         : const Icon(
@@ -626,8 +626,10 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                           children: filtered
                               .map(
                                 (rv) => ListTile(
-                                  leading: const CircleAvatar(
-                                    child: Icon(Icons.person),
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: Colors.grey[200],
+                                    backgroundImage: AssetImage('homepageUser/user_icon.jpg'),
                                   ),
                                   title: Row(
                                     children: [
@@ -716,7 +718,7 @@ class _FoodCard extends StatelessWidget {
                   ),
                   child: food['image'] != null
                       ? Image.asset(
-                          'assets/${food['image']}',
+                          '${food['image']}',
                           fit: BoxFit.cover,
                         )
                       : const Icon(

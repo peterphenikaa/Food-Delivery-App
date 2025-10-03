@@ -11,7 +11,7 @@ class _LoginPageState extends State<LoginPage> {
   int _index = 0;
 
   void _next() {
-    if (_index < 3) {
+    if (_index < 2) {
       _controller.nextPage(
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -41,20 +41,16 @@ class _LoginPageState extends State<LoginPage> {
                     buttonText: 'NEXT',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
-                    image: Container(color: Colors.blueGrey[200]),
+                    image: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'introduction_screen/picture_1.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                     pageIndex: 0,
                     activeIndex: _index,
-                  ),
-                  OnboardingCard(
-                    title: 'All your favorites',
-                    subtitle:
-                        'Get all your loved foods in one place, you just place the order we do the rest',
-                    buttonText: 'NEXT',
-                    buttonColor: Colors.orange,
-                    onButtonPressed: _next,
-                    image: Container(color: Colors.blueGrey[200]),
-                    pageIndex: 1,
-                    activeIndex: _index,
+                    totalPages: 3,
                   ),
                   OnboardingCard(
                     title: 'Order from chosen chef',
@@ -63,9 +59,16 @@ class _LoginPageState extends State<LoginPage> {
                     buttonText: 'NEXT',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
-                    image: Container(color: Colors.blueGrey[200]),
-                    pageIndex: 2,
+                    image: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'introduction_screen/picture_2.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    pageIndex: 1,
                     activeIndex: _index,
+                    totalPages: 3,
                   ),
                   OnboardingCard(
                     title: 'Free delivery offers',
@@ -74,9 +77,16 @@ class _LoginPageState extends State<LoginPage> {
                     buttonText: 'GET STARTED',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
-                    image: Container(color: Colors.blueGrey[200]),
-                    pageIndex: 3,
+                    image: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'introduction_screen/picture_3.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    pageIndex: 2,
                     activeIndex: _index,
+                    totalPages: 3,
                   ),
                 ],
               ),
