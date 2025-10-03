@@ -11,7 +11,6 @@ import 'cart_provider.dart';
 import 'cart_page.dart';
 import 'restaurant_detail_page.dart';
 import 'address_provider.dart';
-import 'address_model.dart';
 import 'edit_address_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -216,14 +215,6 @@ class _HomePageState extends State<HomePage> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              if (addressProvider.defaultAddress != null)
-                                const Text(
-                                  "Nhấn để thay đổi",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 10,
-                                  ),
-                                ),
                             ],
                           ),
                         ),

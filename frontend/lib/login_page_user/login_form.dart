@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../auth/auth_provider.dart';
 import '../home_page_user/shipper_home.dart';
 import '../home_page_user/admin_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginFormPage extends StatefulWidget {
   @override
@@ -17,6 +18,27 @@ class _LoginFormPageState extends State<LoginFormPage> {
   final _passwordController = TextEditingController();
   bool _loading = false;
   bool _remember = false;
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final remembered = prefs.getBool('remember_me') ?? false;
+    final savedEmail = prefs.getString('email') ?? '';
+    final savedPassword = prefs.getString('password') ?? '';
+    if (remembered && savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
+      setState(() {
+        _remember = true;
+        _emailController.text = savedEmail;
+        _passwordController.text = savedPassword;
+      });
+    }
+  }
 
   Future<void> _login() async {
     final email = _emailController.text.trim();
@@ -77,6 +99,8 @@ class _LoginFormPageState extends State<LoginFormPage> {
             },
           );
         }
+        await _persistCredentials(email: email, password: password);
+        Navigator.pushReplacementNamed(context, '/permissions');
       } else {
         final body = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -89,6 +113,19 @@ class _LoginFormPageState extends State<LoginFormPage> {
       ).showSnackBar(SnackBar(content: Text('Network error')));
     } finally {
       setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _persistCredentials({required String email, required String password}) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_remember) {
+      await prefs.setBool('remember_me', true);
+      await prefs.setString('email', email);
+      await prefs.setString('password', password);
+    } else {
+      await prefs.remove('remember_me');
+      await prefs.remove('email');
+      await prefs.remove('password');
     }
   }
 
@@ -170,7 +207,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                     SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: '**********',
                         filled: true,
@@ -179,7 +216,10 @@ class _LoginFormPageState extends State<LoginFormPage> {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
-                        suffixIcon: Icon(Icons.remove_red_eye_outlined),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
                       ),
                     ),
                     SizedBox(height: 12),
@@ -190,8 +230,16 @@ class _LoginFormPageState extends State<LoginFormPage> {
                           children: [
                             Checkbox(
                               value: _remember,
-                              onChanged: (v) =>
-                                  setState(() => _remember = v ?? false),
+                              onChanged: (v) async {
+                                final value = v ?? false;
+                                setState(() => _remember = value);
+                                if (!value) {
+                                  final prefs = await SharedPreferences.getInstance();
+                                  await prefs.remove('remember_me');
+                                  await prefs.remove('email');
+                                  await prefs.remove('password');
+                                }
+                              },
                             ),
                             Text('Remember me'),
                           ],

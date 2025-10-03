@@ -27,17 +27,14 @@ class AddressModel {
     required this.updatedAt,
   });
 
-  // Tạo địa chỉ đầy đủ từ các thành phần
   String get fullAddress {
     return '$street, $ward, $district, $city';
   }
 
-  // Tạo địa chỉ ngắn gọn
   String get shortAddress {
     return '$ward, $district, $city';
   }
 
-  // Tạo bản sao với một số thay đổi
   AddressModel copyWith({
     String? id,
     String? userId,
@@ -68,7 +65,6 @@ class AddressModel {
     );
   }
 
-  // Chuyển đổi thành JSON để gửi lên server
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -86,7 +82,6 @@ class AddressModel {
     };
   }
 
-  // Tạo object từ JSON nhận từ server
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
       id: json['_id'] ?? json['id'] ?? '',
