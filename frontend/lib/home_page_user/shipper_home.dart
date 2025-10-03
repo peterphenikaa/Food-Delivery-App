@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, Tar
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:provider/provider.dart';
+import '../auth/auth_provider.dart';
+import 'shipper_order_detail_page.dart';
 
 class ShipperHomePage extends StatefulWidget {
   const ShipperHomePage({Key? key}) : super(key: key);
@@ -17,6 +20,8 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
   bool isLoading = true;
   Timer? _pollTimer;
   int _lastPendingCount = 0;
+  String? _shipperId;
+  String? _shipperName;
 
   String get baseUrl {
     if (kIsWeb) {
@@ -30,10 +35,9 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
   @override
   void initState() {
     super.initState();
-    _loadOrders();
-    // Poll for new orders every 5 seconds
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _loadOrders(showNotification: true);
+    // Delay to safely access Provider after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAndLoad();
     });
   }
 
@@ -41,6 +45,23 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
   void dispose() {
     _pollTimer?.cancel();
     super.dispose();
+  }
+
+  void _initializeAndLoad() {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    setState(() {
+      _shipperId = auth.userId;
+      _shipperName = auth.userName;
+    });
+
+    _loadOrders();
+    _loadMyOrders();
+
+    // Poll for updates every 5 seconds
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _loadOrders(showNotification: true);
+      _loadMyOrders();
+    });
   }
 
   Future<void> _loadOrders({bool showNotification = false}) async {
@@ -77,6 +98,36 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
     }
   }
 
+  Future<void> _loadMyOrders() async {
+    try {
+      final sid = _shipperId;
+      // Require a valid Mongo ObjectId (24 hex chars) to avoid cast errors on backend
+      final isValidObjectId = sid != null && RegExp(r'^[a-fA-F0-9]{24}$').hasMatch(sid);
+      if (!isValidObjectId) {
+        setState(() {
+          myOrders = [];
+        });
+        return;
+      }
+
+      final url = Uri.parse('$baseUrl/api/orders?shipperId=$sid');
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        // Exclude completed/cancelled from "Đang giao"
+        final filtered = data.where((o) {
+          final s = (o as Map<String, dynamic>)['status']?.toString() ?? '';
+          return s != 'DELIVERED' && s != 'CANCELLED';
+        }).toList();
+        setState(() {
+          myOrders = List<Map<String, dynamic>>.from(filtered);
+        });
+      }
+    } catch (e) {
+      print('💥 Error loading my orders: $e');
+    }
+  }
+
   void _showNewOrderNotification() {
     // Show snackbar + play sound effect
     ScaffoldMessenger.of(context).showSnackBar(
@@ -97,25 +148,77 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
 
   Future<void> _acceptOrder(String orderId) async {
     try {
-      // Mock shipper info (replace with actual logged-in shipper)
+      // Use logged-in shipper profile
+      final sid = _shipperId;
+      final sname = _shipperName ?? 'Shipper';
+
+      final isValidObjectId = sid != null && RegExp(r'^[a-fA-F0-9]{24}$').hasMatch(sid);
+      if (!isValidObjectId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không xác định được Shipper. Hãy đăng nhập tài khoản shipper.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final url = Uri.parse('$baseUrl/api/orders/$orderId/assign');
       final response = await http.put(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'shipperId': 'shipper123',
-          'shipperName': 'Bob Tran',
+          'shipperId': sid,
+          'shipperName': sname,
         }),
       );
 
       if (response.statusCode == 200) {
+        // Move order to My Orders immediately for better UX
+        Map<String, dynamic>? assigned;
+        try {
+          final body = json.decode(response.body);
+          if (body is Map && body['order'] is Map) {
+            assigned = Map<String, dynamic>.from(body['order']);
+          }
+        } catch (_) {}
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Đã nhận đơn thành công!'),
             backgroundColor: Colors.green,
           ),
         );
+        setState(() {
+          pendingOrders.removeWhere((o) => (o['orderId'] ?? '') == orderId);
+          if (assigned != null) {
+            myOrders.insert(0, assigned!);
+          }
+        });
+        // Refresh from server to be consistent
         _loadOrders();
+        _loadMyOrders();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _cancelOrder(String orderId) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/orders/$orderId/cancel');
+      final response = await http.put(url);
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Đã hủy đơn'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        _loadOrders();
+        _loadMyOrders();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -143,12 +246,18 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.orange),
-            onPressed: () => _loadOrders(),
+            onPressed: () {
+              _loadOrders();
+              _loadMyOrders();
+            },
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => _loadOrders(),
+        onRefresh: () async {
+          await _loadOrders();
+          await _loadMyOrders();
+        },
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : ListView(
@@ -446,28 +555,51 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _acceptOrder(orderId),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _cancelOrder(orderId),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'HỦY ĐƠN',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                      elevation: 0,
                     ),
-                    child: const Text(
-                      'NHẬN ĐơN',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        letterSpacing: 0.5,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _acceptOrder(orderId),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'NHẬN ĐƠN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -495,7 +627,16 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
           ),
         ],
       ),
-      child: Padding(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ShipperOrderDetailPage(orderId: orderId),
+            ),
+          );
+        },
+        child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
@@ -548,6 +689,7 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

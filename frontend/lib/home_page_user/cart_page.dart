@@ -570,12 +570,40 @@ class _CartItemCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    _getSizeLabel(item.size),
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Size:',
+                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff2c2c2e),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xff4a4a4c)),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: item.size,
+                            dropdownColor: const Color(0xff3a3a3c),
+                            iconEnabledColor: Colors.white,
+                            style: const TextStyle(color: Colors.white),
+                            items: const [
+                              DropdownMenuItem(value: 'S', child: Text('S (10")')),
+                              DropdownMenuItem(value: 'M', child: Text('M (14")')),
+                              DropdownMenuItem(value: 'L', child: Text('L (16")')),
+                            ],
+                            onChanged: (val) {
+                              if (val == null || val == item.size) return;
+                              Provider.of<CartProvider>(context, listen: false)
+                                  .updateSize(item.id, item.size, val);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Row(

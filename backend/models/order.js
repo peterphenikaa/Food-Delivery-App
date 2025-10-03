@@ -2,19 +2,23 @@ const mongoose = require('mongoose');
 
 const OrderItemSchema = new mongoose.Schema({
   foodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Food' },
-  name: { type: String, required: true },
+  name: { type: String, required: true },  
   image: String,
-  size: String,
-  quantity: { type: Number, required: true },
-  price: { type: Number, required: true },
-  totalPrice: { type: Number, required: true },
+
+  size: String,   
+
+  quantity: { type: Number, required: true },  
+  price: { type: Number, required: true }, 
+  totalPrice: { type: Number, required: true },  
 });
 
 const OrderSchema = new mongoose.Schema({
   orderId: { type: String, unique: true, required: true },
-  userId: { type: String, required: true },
-  userName: { type: String, required: true },
-  userPhone: { type: String, required: true },
+
+  userId: { type: String, required: true },  
+  userName: { type: String, required: true },  
+  userPhone: { type: String, required: true },  
+
   items: [OrderItemSchema],
   subtotal: { type: Number, required: true },
   deliveryFee: { type: Number, default: 15000 },
@@ -32,8 +36,11 @@ const OrderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   estimatedDeliveryTime: String,
+
+  
   restaurantName: String,
   restaurantAddress: String,
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);

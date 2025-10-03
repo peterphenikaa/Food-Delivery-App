@@ -49,6 +49,29 @@ class CartProvider with ChangeNotifier {
     }
   }
 
+  void updateSize(String itemId, String oldSize, String newSize) {
+    final index = _items.indexWhere(
+      (item) => item.id == itemId && item.size == oldSize,
+    );
+    if (index < 0) return;
+
+    final existingSameSizeIndex = _items.indexWhere(
+      (item) => item.id == itemId && item.size == newSize,
+    );
+
+    if (existingSameSizeIndex >= 0) {
+      // Merge quantities into existing target size
+      final merged = _items[existingSameSizeIndex].copyWith(
+        quantity: _items[existingSameSizeIndex].quantity + _items[index].quantity,
+      );
+      _items[existingSameSizeIndex] = merged;
+      _items.removeAt(index);
+    } else {
+      _items[index] = _items[index].copyWith(size: newSize);
+    }
+    notifyListeners();
+  }
+
   void clearCart() {
     _items.clear();
     notifyListeners();

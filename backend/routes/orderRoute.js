@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Order = require('../models/order');
+const Message = require('../models/message');
 
 // POST /api/orders - Create new order
 router.post('/', async (req, res) => {
@@ -82,7 +84,11 @@ router.put('/:id/assign', async (req, res) => {
       return res.status(400).json({ error: 'Order already assigned or completed' });
     }
 
-    order.shipperId = shipperId;
+    if (!mongoose.Types.ObjectId.isValid(shipperId)) {
+      return res.status(400).json({ error: 'Invalid shipperId format' });
+    }
+
+    order.shipperId = new mongoose.Types.ObjectId(shipperId);
     order.shipperName = shipperName;
     order.status = 'ASSIGNED';
     order.updatedAt = Date.now();
@@ -96,7 +102,7 @@ router.put('/:id/assign', async (req, res) => {
 });
 
 // PUT /api/orders/:id/status - Update order status
-router.put('/:id/status'), async (req, res) => {
+router.put('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
     if (!status) return res.status(400).json({ error: 'Missing status' });
@@ -113,7 +119,26 @@ router.put('/:id/status'), async (req, res) => {
     console.error('Error updating status:', err);
     res.status(500).json({ error: 'Server error' });
   }
-}
+});
+
+// PUT /api/orders/:id/cancel - Cancel order (by user/shipper)
+router.put('/:id/cancel', async (req, res) => {
+  try {
+    const order = await Order.findOne({ orderId: req.params.id });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    order.status = 'CANCELLED';
+    order.shipperId = undefined;
+    order.shipperName = undefined;
+    order.updatedAt = Date.now();
+    await order.save();
+
+    res.json({ message: 'Order cancelled', order });
+  } catch (err) {
+    console.error('Error cancelling order:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // GET /api/orders/stats/counters
 // running = status "preparing"; requests = status "requested"
@@ -225,3 +250,36 @@ router.get("/stats/revenue", async (req, res) => {
 });
 
 module.exports = router;
+
+// -------------------- CHAT ENDPOINTS --------------------
+// GET /api/orders/:id/messages - list messages of an order
+router.get('/:id/messages', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const since = req.query.since ? new Date(req.query.since) : null;
+    const filter = { orderId };
+    if (since && !isNaN(since)) filter.createdAt = { $gt: since };
+    const messages = await Message.find(filter).sort({ createdAt: 1 }).limit(200);
+    res.json(messages);
+  } catch (err) {
+    console.error('Error fetching messages:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/orders/:id/messages - send a message
+router.post('/:id/messages', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { senderId, senderRole, content } = req.body;
+    if (!senderId || !senderRole || !content) {
+      return res.status(400).json({ error: 'Missing senderId, senderRole or content' });
+    }
+    const msg = new Message({ orderId, senderId, senderRole, content });
+    await msg.save();
+    res.status(201).json(msg);
+  } catch (err) {
+    console.error('Error posting message:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});

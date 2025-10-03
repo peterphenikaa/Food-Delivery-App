@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import 'cart_provider.dart';
 import 'home_pages.dart';
+import 'order_tracking_page.dart';
 
 class OrderSuccessPage extends StatelessWidget {
   final String orderId;
@@ -347,53 +348,10 @@ class OrderSuccessPage extends StatelessWidget {
   }
 
   void _showTrackOrderDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.local_shipping, color: Colors.orange[700], size: 28),
-              const SizedBox(width: 12),
-              const Text('Theo dõi đơn hàng'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTrackingStep('Đặt hàng thành công', true, Icons.check_circle),
-              _buildTrackingStep('Xác nhận đơn hàng', true, Icons.check_circle),
-              _buildTrackingStep('Chuẩn bị món ăn', false, Icons.restaurant),
-              _buildTrackingStep('Đang giao hàng', false, Icons.local_shipping),
-              _buildTrackingStep('Giao hàng thành công', false, Icons.home),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Đóng'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Bạn sẽ nhận được thông báo khi đơn hàng được cập nhật'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-              ),
-              child: const Text('Nhận thông báo'),
-            ),
-          ],
-        );
-      },
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => OrderTrackingPage(orderId: orderId),
+      ),
     );
   }
 
