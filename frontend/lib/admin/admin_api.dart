@@ -46,6 +46,46 @@ class AdminApi {
         .toList();
     return series;
   }
+
+  Future<List<Map<String, dynamic>>> fetchRestaurants() async {
+    final res = await http.get(Uri.parse('$baseUrl/api/restaurants'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải nhà hàng: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as List<dynamic>;
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTopFoods({int limit = 3}) async {
+    final res = await http.get(Uri.parse('$baseUrl/api/orders/stats/top-foods?limit=$limit'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải món phổ biến: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as List<dynamic>;
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchFoods({String? category, String? search}) async {
+    final params = <String, String>{};
+    if (category != null && category.isNotEmpty) params['category'] = category;
+    if (search != null && search.isNotEmpty) params['search'] = search;
+    final uri = Uri.parse('$baseUrl/api/foods').replace(queryParameters: params.isEmpty ? null : params);
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải món ăn: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as List<dynamic>;
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<Map<String, dynamic>> createFood(Map<String, dynamic> body) async {
+    final uri = Uri.parse('$baseUrl/api/foods');
+    final res = await http.post(uri, headers: {'Content-Type': 'application/json'}, body: json.encode(body));
+    if (res.statusCode != 201) {
+      throw Exception('Lỗi tạo món: ${res.statusCode} ${res.body}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
 }
 
 class AdminCounters {

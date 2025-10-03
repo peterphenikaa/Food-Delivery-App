@@ -31,7 +31,7 @@ class FoodDeliveryApp extends StatelessWidget {
         theme: ThemeData(primarySwatch: Colors.orange),
         initialRoute: '/splash',
         routes: {
-          '/splash': (_) => SplashPage(), //SplashPage
+          '/splash': (_) => AdminDashboardPage(), //SplashPage
           '/login': (_) => LoginPage(),
           '/permissions': (_) => PermissionPage(),
           '/auth': (_) => LoginFormPage(),

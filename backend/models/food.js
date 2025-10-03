@@ -16,12 +16,14 @@ const FoodSchema = new mongoose.Schema({
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Restaurant',
-    required: true
+    required: false
   },
   isAvailable: { type: Boolean, default: true },
   rating: { type: Number, default: 0 },
   deliveryTime: { type: Number, default: 30 },
-  reviews: [ReviewSchema]
+  reviews: [ReviewSchema],
+  // Chỉ lưu tên nguyên liệu
+  ingredients: { type: [String], default: [] }
 });
 
 module.exports = mongoose.model('Food', FoodSchema);

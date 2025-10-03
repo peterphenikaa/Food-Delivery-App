@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'admin_api.dart';
+import 'admin_food_list_page.dart';
+import 'admin_add_food_page.dart';
 
 String formatCurrencyVND(double v) {
   final s = v.toStringAsFixed(0);
@@ -28,6 +30,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   int runningOrders = 0;
   int orderRequests = 0;
+  double avgRestaurantRating = 0.0;
+  int totalRestaurantReviews = 0;
 
   final Map<String, List<double>> _mockRevenueByFilter = {
     'Hàng ngày': [],
@@ -39,6 +43,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     'Hàng tuần': [],
     'Hàng tháng': [],
   };
+  int _tabIndex = 0; // 0: dashboard, 1: foods, 2: notifications, 3: account
 
   @override
   Widget build(BuildContext context) {
@@ -54,62 +59,79 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         ? seriesForChart.fold(0.0, (prev, v) => prev + v)
         : 0.0;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1F3F6),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _Header(
-                selectedLocation: _selectedLocation,
-                onChangeLocation: (value) => setState(() {
-                  _selectedLocation = value;
-                }),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatCard(
-                      value: runningOrders.toString().padLeft(2, '0'),
-                      label: 'Đơn đang xử lý',
-                      icon: Icons.local_shipping_outlined,
-                    ),
+    final dashboardPage = SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Header(
+              selectedLocation: _selectedLocation,
+              onChangeLocation: (value) => setState(() {
+                _selectedLocation = value;
+              }),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    value: runningOrders.toString().padLeft(2, '0'),
+                    label: 'Đơn đang xử lý',
+                    icon: Icons.local_shipping_outlined,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      value: orderRequests.toString().padLeft(2, '0'),
-                      label: 'Yêu cầu đơn hàng',
-                      icon: Icons.pending_actions_outlined,
-                    ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    value: orderRequests.toString().padLeft(2, '0'),
+                    label: 'Yêu cầu đơn hàng',
+                    icon: Icons.pending_actions_outlined,
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _RevenueCard(
-                total: totalRevenue,
-                filter: _filter,
-                onFilterChanged: (value) {
-                  setState(() => _filter = value);
-                  _loadRevenue();
-                },
-                series: seriesForChart,
-                labels: labelsDyn,
-                tooltips: tooltipsDyn,
-              ),
-              const SizedBox(height: 16),
-              _ReviewsPreview(rating: 4.9, totalReviews: 20),
-              const SizedBox(height: 16),
-              const _PopularItemsSection(),
-              const SizedBox(height: 80),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _RevenueCard(
+              total: totalRevenue,
+              filter: _filter,
+              onFilterChanged: (value) {
+                setState(() => _filter = value);
+                _loadRevenue();
+              },
+              series: seriesForChart,
+              labels: labelsDyn,
+              tooltips: tooltipsDyn,
+            ),
+            const SizedBox(height: 16),
+            _ReviewsPreview(rating: avgRestaurantRating, totalReviews: totalRestaurantReviews),
+            const SizedBox(height: 16),
+            const _PopularItemsSection(),
+            const SizedBox(height: 80),
+          ],
         ),
       ),
-      bottomNavigationBar: _BottomBar(onCenterTap: () {}),
+    );
+
+    final pages = <Widget>[
+      dashboardPage,
+      const AdminFoodListPage(),
+      const Center(child: Text('Thông báo')),
+      const Center(child: Text('Tài khoản')),
+    ];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F3F6),
+      body: IndexedStack(index: _tabIndex, children: pages),
+      bottomNavigationBar: _BottomBar(
+        selectedIndex: _tabIndex,
+        onSelect: (i) => setState(() => _tabIndex = i),
+        onCenterTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AdminAddFoodPage()),
+          );
+        },
+      ),
     );
   }
 
@@ -119,6 +141,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     _api = AdminApi.fromDefaults();
     _loadCounters();
     _loadRevenue();
+    _loadRestaurantRatings();
   }
 
   Future<void> _loadCounters() async {
@@ -130,6 +153,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       });
     } catch (_) {
       // fallback giữ mock
+    }
+  }
+
+  Future<void> _loadRestaurantRatings() async {
+    try {
+      final restaurants = await _api.fetchRestaurants();
+      if (restaurants.isEmpty) return;
+      double sumRating = 0.0;
+      int count = 0;
+      int reviewsTotal = 0;
+      for (final r in restaurants) {
+        final rating = (r['rating'] is num) ? (r['rating'] as num).toDouble() : 0.0;
+        sumRating += rating;
+        count += 1;
+        if (r['reviews'] is List) {
+          reviewsTotal += (r['reviews'] as List).length;
+        }
+      }
+      setState(() {
+        avgRestaurantRating = count == 0 ? 0.0 : double.parse((sumRating / count).toStringAsFixed(1));
+        totalRestaurantReviews = reviewsTotal;
+      });
+    } catch (_) {
+      // keep defaults if failed
     }
   }
 
@@ -661,29 +708,71 @@ class _PopularItemsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 140,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: const [
-                _PopularItemCard(
-                  image: 'assets/homepageUser/burger_img1.jpg',
-                  title: 'Burger bò phô mai',
-                ),
-                SizedBox(width: 12),
-                _PopularItemCard(
-                  image: 'assets/homepageUser/pizza_img1.webp',
-                  title: 'Pizza hải sản',
-                ),
-                SizedBox(width: 12),
-                _PopularItemCard(
-                  image: 'assets/homepageUser/restaurant_img1.jpg',
-                  title: 'Combo đặc biệt',
-                ),
-              ],
-            ),
-          ),
+          _TopFoodsList(),
         ],
+      ),
+    );
+  }
+}
+
+class _TopFoodsList extends StatefulWidget {
+  @override
+  State<_TopFoodsList> createState() => _TopFoodsListState();
+}
+
+class _TopFoodsListState extends State<_TopFoodsList> {
+  late final AdminApi _api;
+  bool loading = true;
+  List<Map<String, dynamic>> foods = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _api = AdminApi.fromDefaults();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final data = await _api.fetchTopFoods(limit: 3);
+      setState(() => foods = data);
+    } catch (_) {
+      setState(() => foods = []);
+    } finally {
+      setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const SizedBox(
+        height: 140,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (foods.isEmpty) {
+      return const SizedBox(
+        height: 50,
+        child: Center(child: Text('Chưa có dữ liệu đơn hàng')), 
+      );
+    }
+    return SizedBox(
+      height: 140,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: foods.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final f = foods[index];
+          final title = (f['name'] ?? '').toString();
+          final image = (f['image'] != null && (f['image'] as String).isNotEmpty)
+              ? 'assets/${f['image']}'
+              : 'assets/homepageUser/restaurant_img1.jpg';
+          final qty = (f['totalQuantity'] ?? 0) as int;
+          return _PopularItemCard(image: image, title: '$title (x$qty)');
+        },
       ),
     );
   }
@@ -744,7 +833,9 @@ class _PopularItemCard extends StatelessWidget {
 
 class _BottomBar extends StatelessWidget {
   final VoidCallback onCenterTap;
-  const _BottomBar({required this.onCenterTap});
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+  const _BottomBar({required this.onCenterTap, this.selectedIndex = 0, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
@@ -767,11 +858,11 @@ class _BottomBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _NavIcon(icon: Icons.grid_view_rounded, selected: true, onTap: () {}),
-          _NavIcon(icon: Icons.menu_rounded, selected: false, onTap: () {}),
+          _NavIcon(icon: Icons.grid_view_rounded, selected: selectedIndex == 0, onTap: () => onSelect(0)),
+          _NavIcon(icon: Icons.menu_rounded, selected: selectedIndex == 1, onTap: () => onSelect(1)),
           _CenterButton(onTap: onCenterTap),
-          _NavIcon(icon: Icons.notifications_none_rounded, selected: false, onTap: () {}),
-          _NavIcon(icon: Icons.person_outline_rounded, selected: false, onTap: () {}),
+          _NavIcon(icon: Icons.notifications_none_rounded, selected: selectedIndex == 2, onTap: () => onSelect(2)),
+          _NavIcon(icon: Icons.person_outline_rounded, selected: selectedIndex == 3, onTap: () => onSelect(3)),
         ],
       ),
     );
@@ -814,3 +905,4 @@ class _CenterButton extends StatelessWidget {
     );
   }
 }
+

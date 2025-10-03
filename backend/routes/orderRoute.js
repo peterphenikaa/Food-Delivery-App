@@ -1,8 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const mongoose = require('mongoose');
 const Order = require('../models/order');
-const Message = require('../models/message');
 const Food = require('../models/food');
 const Restaurant = require('../models/restaurant');
 
@@ -165,7 +164,6 @@ router.put('/:id/cancel', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // GET /api/orders/stats/counters
 // running = status "preparing"; requests = status "requested"
 router.get("/stats/counters", async (req, res) => {
@@ -277,35 +275,48 @@ router.get("/stats/revenue", async (req, res) => {
 
 module.exports = router;
 
-// -------------------- CHAT ENDPOINTS --------------------
-// GET /api/orders/:id/messages - list messages of an order
-router.get('/:id/messages', async (req, res) => {
+// GET /api/orders/stats/top-foods?limit=3
+// Returns top N foods by aggregated ordered quantity from PAID orders
+router.get("/stats/top-foods", async (req, res) => {
   try {
-    const orderId = req.params.id;
-    const since = req.query.since ? new Date(req.query.since) : null;
-    const filter = { orderId };
-    if (since && !isNaN(since)) filter.createdAt = { $gt: since };
-    const messages = await Message.find(filter).sort({ createdAt: 1 }).limit(200);
-    res.json(messages);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 3, 10));
+    const pipeline = [
+      { $match: { paymentStatus: "paid" } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: { $ifNull: ["$items.food", "$items.foodId"] },
+          totalQuantity: { $sum: "$items.quantity" }
+        }
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "foods",
+          localField: "_id",
+          foreignField: "_id",
+          as: "food"
+        }
+      },
+      { $unwind: "$food" },
+      {
+        $project: {
+          _id: 0,
+          id: "$food._id",
+          name: "$food.name",
+          image: "$food.image",
+          price: "$food.price",
+          category: "$food.category",
+          restaurantId: "$food.restaurantId",
+          totalQuantity: 1
+        }
+      }
+    ];
+    const rows = await Order.aggregate(pipeline);
+    return res.json(rows);
   } catch (err) {
-    console.error('Error fetching messages:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// POST /api/orders/:id/messages - send a message
-router.post('/:id/messages', async (req, res) => {
-  try {
-    const orderId = req.params.id;
-    const { senderId, senderRole, content } = req.body;
-    if (!senderId || !senderRole || !content) {
-      return res.status(400).json({ error: 'Missing senderId, senderRole or content' });
-    }
-    const msg = new Message({ orderId, senderId, senderRole, content });
-    await msg.save();
-    res.status(201).json(msg);
-  } catch (err) {
-    console.error('Error posting message:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });

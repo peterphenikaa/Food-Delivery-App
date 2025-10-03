@@ -40,7 +40,12 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const newFood = new Food(req.body);
+    const payload = { ...req.body };
+    // Tạm thời cho phép thiếu restaurantId vì chỉ có 1 nhà hàng
+    if (!payload.restaurantId) {
+      delete payload.restaurantId;
+    }
+    const newFood = new Food(payload);
     await newFood.save();
     res.status(201).json(newFood);
   } catch (error) {

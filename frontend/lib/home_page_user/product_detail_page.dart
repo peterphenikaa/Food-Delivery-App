@@ -469,17 +469,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: const [
-                        _IngredientIcon(icon: Icons.local_pizza),
-                        SizedBox(width: 10),
-                        _IngredientIcon(icon: Icons.egg_alt),
-                        SizedBox(width: 10),
-                        _IngredientIcon(icon: Icons.local_fire_department),
-                        SizedBox(width: 10),
-                        _IngredientIcon(icon: Icons.eco),
-                      ],
-                    ),
+                    Builder(builder: (context) {
+                      final List<dynamic> raw = (item['ingredients'] as List?) ?? const [];
+                      final List<String> ingredients = raw.map((e) => e.toString()).toList();
+                      if (ingredients.isEmpty) {
+                        return const Text('Chưa có nguyên liệu', style: TextStyle(color: Colors.grey));
+                      }
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: ingredients
+                            .map((ing) => Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF2E6),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(ing, style: const TextStyle(color: Colors.deepOrange)),
+                                ))
+                            .toList(),
+                      );
+                    }),
                     const SizedBox(height: 18),
 
                     Padding(

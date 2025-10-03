@@ -65,6 +65,7 @@ async function run() {
       isAvailable: true,
       rating: 4.5,
       deliveryTime: 30,
+      ingredients: ["Bánh burger", "Thịt bò", "Rau xà lách", "Cà chua", "Phô mai", "Sốt đặc biệt"],
       reviews: [
         { user: 'Alice', rating: 5, comment: 'Rất ngon!', createdAt: new Date() },
         { user: 'Bob', rating: 4, comment: 'Tạm ổn, bánh hơi khô', createdAt: new Date() }
@@ -80,6 +81,7 @@ async function run() {
       isAvailable: true,
       rating: 4.2,
       deliveryTime: 30,
+      ingredients: ["Bánh mì dài", "Xúc xích Đức", "Tương cà", "Mù tạt"],
     },
     {
       name: "Combo Fast Food",
@@ -91,6 +93,7 @@ async function run() {
       isAvailable: true,
       rating: 4.6,
       deliveryTime: 18,
+      ingredients: ["Burger", "Khoai tây chiên", "Nước ngọt"]
     },
     {
       name: "Beef Steak",
@@ -102,6 +105,7 @@ async function run() {
       isAvailable: true,
       rating: 4.8,
       deliveryTime: 35,
+      ingredients: ["Thịt bò", "Muối", "Tiêu", "Bơ", "Tỏi"],
     },
     {
       name: "Fish and Chips",
@@ -113,6 +117,7 @@ async function run() {
       isAvailable: true,
       rating: 4.1,
       deliveryTime: 25,
+      ingredients: ["Cá tuyết", "Bột chiên giòn", "Khoai tây", "Muối", "Dầu chiên"],
     },
     
     // THE PIZZA PLACE - Pizza, Salad
