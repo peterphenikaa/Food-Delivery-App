@@ -28,14 +28,6 @@ Dự án Food Delivery App mô phỏng quy trình đặt món – nấu – giao
 - **CORS** - Cross-origin requests
 - **Mongoose** - ODM
 
-## 📊 Thống kê dự án
-
-- **Tổng số dòng code**: 13,671 dòng
-- **Frontend (Flutter)**: 10,342 dòng (34 files)
-- **Backend (Node.js)**: 1,496 dòng (21 files)
-- **Platform configs**: 333 dòng (21 files)
-- **Config files**: 1,500 dòng (9 files)
-
 ## 🚀 Cài đặt và chạy dự án
 
 ### Yêu cầu hệ thống
