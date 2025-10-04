@@ -11,6 +11,7 @@ const { connectRedis } = require("./redisClient");
 const addressRoute = require("./routes/addressRoute");
 const restaurantRoute = require("./routes/restaurantRoute");
 const orderRoute = require("./routes/orderRoute");
+const userManagementRoute = require("./routes/userManagementRoute");
 
 // Read connection values from environment (see .env or .env.example)
 const MONGO_URL =
@@ -40,6 +41,7 @@ app.use("/api/location", locationRoute);
 app.use("/api/addresses", addressRoute);
 app.use("/api", restaurantRoute);
 app.use("/api/orders", orderRoute);
+app.use("/api/users", userManagementRoute);
 
 // Hello World route
 app.get("/", (req, res) => {

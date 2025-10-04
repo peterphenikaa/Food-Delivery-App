@@ -27,7 +27,8 @@ class AdminDashboardPage extends StatefulWidget {
 }
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
-  String _selectedLocation = 'Văn phòng Halal Lab';
+  String _selectedLocation = '';
+  String? _selectedRestaurantId;
   String _filter = 'Hàng ngày';
   late final AdminApi _api;
 
@@ -69,10 +70,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _Header(
-              selectedLocation: _selectedLocation,
-              onChangeLocation: (value) => setState(() {
-                _selectedLocation = value;
-              }),
+              selectedLocation: _selectedLocation.isEmpty ? 'Đang tải địa điểm...' : _selectedLocation,
+              onTapChoose: _openRestaurantPicker,
             ),
             const SizedBox(height: 16),
             Row(
@@ -80,7 +79,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 Expanded(
                   child: _StatCard(
                     value: runningOrders.toString().padLeft(2, '0'),
-                    label: 'Đơn đang xử lý',
+                    label: 'Đơn đang chờ',
                     icon: Icons.local_shipping_outlined,
                   ),
                 ),
@@ -109,7 +108,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             const SizedBox(height: 16),
             _ReviewsPreview(rating: avgRestaurantRating, totalReviews: totalRestaurantReviews),
             const SizedBox(height: 16),
-            const _PopularItemsSection(),
+            _PopularItemsSection(restaurantId: _selectedRestaurantId),
             const SizedBox(height: 80),
           ],
         ),
@@ -142,14 +141,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   void initState() {
     super.initState();
     _api = AdminApi.fromDefaults();
-    _loadCounters();
-    _loadRevenue();
+    _initDefaultRestaurant();
     _loadRestaurantRatings();
+  }
+
+  Future<void> _initDefaultRestaurant() async {
+    try {
+      final restaurants = await _api.fetchRestaurants();
+      if (restaurants.isNotEmpty) {
+        final r = restaurants.first;
+        setState(() {
+          _selectedRestaurantId = (r['_id'] ?? r['id']).toString();
+          _selectedLocation = (r['name'] ?? r['address'] ?? '').toString();
+        });
+        await Future.wait([
+          _loadCounters(),
+          _loadRevenue(),
+        ]);
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadCounters() async {
     try {
-      final c = await _api.fetchCounters();
+      final c = await _api.fetchCounters(restaurantId: _selectedRestaurantId);
       setState(() {
         runningOrders = c.running;
         orderRequests = c.requests;
@@ -161,22 +176,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   Future<void> _loadRestaurantRatings() async {
     try {
+      if (_selectedRestaurantId == null) return;
+      
       final restaurants = await _api.fetchRestaurants();
-      if (restaurants.isEmpty) return;
-      double sumRating = 0.0;
-      int count = 0;
-      int reviewsTotal = 0;
-      for (final r in restaurants) {
-        final rating = (r['rating'] is num) ? (r['rating'] as num).toDouble() : 0.0;
-        sumRating += rating;
-        count += 1;
-        if (r['reviews'] is List) {
-          reviewsTotal += (r['reviews'] as List).length;
-        }
-      }
+      final selectedRestaurant = restaurants.firstWhere(
+        (r) => (r['_id'] ?? r['id']).toString() == _selectedRestaurantId,
+        orElse: () => restaurants.isNotEmpty ? restaurants.first : {},
+      );
+      
+      if (selectedRestaurant.isEmpty) return;
+      
+      final rating = (selectedRestaurant['rating'] is num) ? (selectedRestaurant['rating'] as num).toDouble() : 0.0;
+      final reviews = selectedRestaurant['reviews'] as List? ?? [];
+      
       setState(() {
-        avgRestaurantRating = count == 0 ? 0.0 : double.parse((sumRating / count).toStringAsFixed(1));
-        totalRestaurantReviews = reviewsTotal;
+        avgRestaurantRating = rating;
+        totalRestaurantReviews = reviews.length;
       });
     } catch (_) {
       // keep defaults if failed
@@ -190,7 +205,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           : _filter == 'Hàng tuần'
               ? 'weekly'
               : 'monthly';
-      final series = await _api.fetchRevenue(granularity: g);
+      final series = await _api.fetchRevenue(granularity: g, restaurantId: _selectedRestaurantId);
       setState(() {
         // Doanh thu chỉ tính đơn đã thanh toán (paid) theo API backend
         _pointsByFilter[_filter] = series;
@@ -224,15 +239,63 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
     return List<String>.generate(5, (i) => '');
   }
+
+  Future<void> _openRestaurantPicker() async {
+    try {
+      final restaurants = await _api.fetchRestaurants();
+      if (!mounted) return;
+      final chosen = await showModalBottomSheet<Map<String, dynamic>>(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (ctx) {
+          return SafeArea(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (_, i) {
+                final r = restaurants[i];
+                return ListTile(
+                  title: Text(
+                    r['name'] ?? 'Nhà hàng',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    (r['address'] ?? '').toString(),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  onTap: () => Navigator.of(ctx).pop(r),
+                );
+              },
+              separatorBuilder: (_, __) => const Divider(),
+              itemCount: restaurants.length,
+            ),
+          );
+        },
+      );
+      if (chosen != null) {
+        setState(() {
+          _selectedRestaurantId = (chosen['_id'] ?? chosen['id'])?.toString();
+          _selectedLocation = (chosen['name'] ?? chosen['address'] ?? 'Nhà hàng').toString();
+        });
+        await Future.wait([
+          _loadCounters(),
+          _loadRevenue(),
+          _loadRestaurantRatings(),
+        ]);
+      }
+    } catch (_) {}
+  }
 }
 
 class _Header extends StatelessWidget {
   final String selectedLocation;
-  final ValueChanged<String> onChangeLocation;
+  final VoidCallback onTapChoose;
 
   const _Header({
     required this.selectedLocation,
-    required this.onChangeLocation,
+    required this.onTapChoose,
   });
 
   @override
@@ -260,20 +323,21 @@ class _Header extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        selectedLocation,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                        overflow: TextOverflow.ellipsis,
+                InkWell(
+                  onTap: onTapChoose,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          selectedLocation,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_drop_down, color: Colors.grey),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -684,7 +748,8 @@ class _ReviewsPreview extends StatelessWidget {
 }
 
 class _PopularItemsSection extends StatelessWidget {
-  const _PopularItemsSection();
+  final String? restaurantId;
+  const _PopularItemsSection({this.restaurantId});
 
   @override
   Widget build(BuildContext context) {
@@ -711,7 +776,7 @@ class _PopularItemsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          _TopFoodsList(),
+          _TopFoodsList(restaurantId: restaurantId),
         ],
       ),
     );
@@ -719,6 +784,9 @@ class _PopularItemsSection extends StatelessWidget {
 }
 
 class _TopFoodsList extends StatefulWidget {
+  final String? restaurantId;
+  const _TopFoodsList({this.restaurantId});
+
   @override
   State<_TopFoodsList> createState() => _TopFoodsListState();
 }
@@ -735,10 +803,18 @@ class _TopFoodsListState extends State<_TopFoodsList> {
     _load();
   }
 
+  @override
+  void didUpdateWidget(_TopFoodsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.restaurantId != widget.restaurantId) {
+      _load();
+    }
+  }
+
   Future<void> _load() async {
     setState(() => loading = true);
     try {
-      final data = await _api.fetchTopFoods(limit: 3);
+      final data = await _api.fetchTopFoods(limit: 3, restaurantId: widget.restaurantId);
       setState(() => foods = data);
     } catch (_) {
       setState(() => foods = []);

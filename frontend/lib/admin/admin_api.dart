@@ -18,8 +18,9 @@ class AdminApi {
     return AdminApi(baseUrl: 'http://localhost:3000');
   }
 
-  Future<AdminCounters> fetchCounters() async {
-    final res = await http.get(Uri.parse('$baseUrl/api/orders/stats/counters'));
+  Future<AdminCounters> fetchCounters({String? restaurantId}) async {
+    final qs = restaurantId != null ? '?restaurantId=$restaurantId' : '';
+    final res = await http.get(Uri.parse('$baseUrl/api/orders/stats/counters$qs'));
     if (res.statusCode != 200) {
       throw Exception('Lỗi tải counters: ${res.statusCode}');
     }
@@ -30,8 +31,9 @@ class AdminApi {
     );
   }
 
-  Future<List<RevenuePoint>> fetchRevenue({String granularity = 'daily'}) async {
-    final url = Uri.parse('$baseUrl/api/orders/stats/revenue?granularity=$granularity');
+  Future<List<RevenuePoint>> fetchRevenue({String granularity = 'daily', String? restaurantId}) async {
+    final extra = restaurantId != null ? '&restaurantId=$restaurantId' : '';
+    final url = Uri.parse('$baseUrl/api/orders/stats/revenue?granularity=$granularity$extra');
     final res = await http.get(url);
     if (res.statusCode != 200) {
       throw Exception('Lỗi tải doanh thu: ${res.statusCode}');
@@ -57,8 +59,9 @@ class AdminApi {
     return List<Map<String, dynamic>>.from(data);
   }
 
-  Future<List<Map<String, dynamic>>> fetchTopFoods({int limit = 3}) async {
-    final res = await http.get(Uri.parse('$baseUrl/api/orders/stats/top-foods?limit=$limit'));
+  Future<List<Map<String, dynamic>>> fetchTopFoods({int limit = 3, String? restaurantId}) async {
+    final extra = restaurantId != null ? '&restaurantId=$restaurantId' : '';
+    final res = await http.get(Uri.parse('$baseUrl/api/orders/stats/top-foods?limit=$limit$extra'));
     if (res.statusCode != 200) {
       throw Exception('Lỗi tải món phổ biến: ${res.statusCode}');
     }
@@ -114,6 +117,63 @@ class AdminApi {
     }
     final data = json.decode(res.body) as List<dynamic>;
     return List<Map<String, dynamic>>.from(data);
+  }
+
+  // User Management APIs
+  Future<List<Map<String, dynamic>>> fetchUsers() async {
+    final res = await http.get(Uri.parse('$baseUrl/api/users'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải danh sách người dùng: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as List<dynamic>;
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<int> fetchUserCount() async {
+    final res = await http.get(Uri.parse('$baseUrl/api/users/stats/count'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải số lượng người dùng: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as Map<String, dynamic>;
+    return data['totalUsers'] as int;
+  }
+
+  Future<Map<String, dynamic>> updateUser(String id, Map<String, dynamic> body) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/api/users/$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(body),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi cập nhật người dùng: ${res.statusCode}');
+    }
+    return json.decode(res.body) as Map<String, dynamic>;
+  }
+
+  Future<void> deleteUser(String id) async {
+    final res = await http.delete(Uri.parse('$baseUrl/api/users/$id'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi xóa người dùng: ${res.statusCode}');
+    }
+  }
+
+  // Shipper Management APIs
+  Future<List<Map<String, dynamic>>> fetchShippers() async {
+    final res = await http.get(Uri.parse('$baseUrl/api/users?role=shipper'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải danh sách shipper: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as List<dynamic>;
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<int> fetchShipperCount() async {
+    final res = await http.get(Uri.parse('$baseUrl/api/users/stats/count?role=shipper'));
+    if (res.statusCode != 200) {
+      throw Exception('Lỗi tải số lượng shipper: ${res.statusCode}');
+    }
+    final data = json.decode(res.body) as Map<String, dynamic>;
+    return data['totalUsers'] as int;
   }
 }
 

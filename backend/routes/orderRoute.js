@@ -70,10 +70,15 @@ router.post('/', async (req, res) => {
 // GET /api/orders - Get all orders (with optional status filter)
 router.get('/', async (req, res) => {
   try {
-    const { status, shipperId } = req.query;
+    const { status, shipperId, restaurantId } = req.query;
     const filter = {};
     if (status) filter.status = status;
     if (shipperId) filter.shipperId = shipperId;
+    if (restaurantId) {
+      try {
+        filter.restaurantId = new mongoose.Types.ObjectId(restaurantId);
+      } catch (_) {}
+    }
     
     const orders = await Order.find(filter).sort({ createdAt: -1 });
     res.json(orders);
@@ -169,9 +174,12 @@ router.put('/:id/cancel', async (req, res) => {
 // running = status "preparing"; requests = status "requested"
 router.get("/stats/counters", async (req, res) => {
   try {
+    const restaurantId = req.query.restaurantId;
+    const base = {};
+    if (restaurantId) base.restaurantId = new mongoose.Types.ObjectId(restaurantId);
     const [running, requests] = await Promise.all([
-      Order.countDocuments({ status: "preparing" }),
-      Order.countDocuments({ status: "requested" }),
+      Order.countDocuments({ ...base, status: "preparing" }),
+      Order.countDocuments({ ...base, status: "requested" }),
     ]);
     res.json({ running, requests });
   } catch (err) {
@@ -191,6 +199,8 @@ router.get("/stats/revenue", async (req, res) => {
 
     const match = {};
     if (paidOnly) match.paymentStatus = "paid";
+    const restaurantId = req.query.restaurantId;
+    if (restaurantId) match.restaurantId = new mongoose.Types.ObjectId(restaurantId);
 
     const now = new Date();
 
@@ -281,8 +291,10 @@ module.exports = router;
 router.get("/stats/top-foods", async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 3, 10));
+    const match = { paymentStatus: "paid" };
+    if (req.query.restaurantId) match.restaurantId = new mongoose.Types.ObjectId(req.query.restaurantId);
     const pipeline = [
-      { $match: { paymentStatus: "paid" } },
+      { $match: match },
       { $unwind: "$items" },
       { $group: { _id: { $ifNull: ["$items.food", "$items.foodId"] }, totalQuantity: { $sum: "$items.quantity" } } },
       { $sort: { totalQuantity: -1 } },

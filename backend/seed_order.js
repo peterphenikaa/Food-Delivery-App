@@ -32,6 +32,11 @@ async function run() {
   const foods = await Food.find({}).limit(6);
   if (foods.length < 2) throw new Error("Not enough foods. Run seed_food.js first");
 
+  // Get restaurant info for orders
+  const Restaurant = require("./models/restaurant");
+  const restaurants = await Restaurant.find({});
+  if (restaurants.length === 0) throw new Error("No restaurants found. Run seed_restaurant.js first");
+
   await Order.deleteMany({});
 
   const addressStr = (u) => {
@@ -51,6 +56,11 @@ async function run() {
     const deliveryFee = 15000;
     const serviceFee = Math.round(subtotal * 0.10); // 10% phí dịch vụ giống ví dụ
     const total = subtotal + deliveryFee + serviceFee;
+    
+    // Get restaurant info from the first food item's restaurantId
+    const firstFood = items[0];
+    const restaurant = restaurants.find(r => r._id.toString() === firstFood.foodId.toString()) || restaurants[0];
+    
     return {
       orderId: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       userId: String(user._id),
@@ -65,8 +75,9 @@ async function run() {
       paymentStatus: 'paid',
       deliveryAddress: addressStr(user),
       estimatedDeliveryTime: '20-30 phút',
-      restaurantName: 'Uttora Coffee House',
-      restaurantAddress: '123 Main St',
+      restaurantName: restaurant.name,
+      restaurantAddress: restaurant.address,
+      restaurantId: restaurant._id,
       note,
       status,
       createdAt: shiftDays(now, -createdShiftDays),
