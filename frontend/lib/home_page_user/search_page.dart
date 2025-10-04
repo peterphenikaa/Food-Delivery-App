@@ -79,19 +79,19 @@ class _SearchPageState extends State<SearchPage> {
 
   final List<Map<String, dynamic>> suggestedRestaurants = [
     {
-      "name": "Panshi Restaurant",
-      "image": "homepageUser/Panshi_restaurant.jpg",
-      "rating": 4.9,
+      "name": "The Pizza Place",
+      "image": "homepageUser/pizaa_place.jpg",
+      "rating": 4.8,
     },
     {
-      "name": "American Spicy Burger Shop",
-      "image": "homepageUser/american_spicy_burger_shop.jpg",
-      "rating": 4.6,
-    },
-    {
-      "name": "Cafenio Coffee Club",
-      "image": "homepageUser/Cafenio_coffe_club.jpg",
+      "name": "Burger Heaven",
+      "image": "homepageUser/burger_heaven.webp",
       "rating": 4.5,
+    },
+    {
+      "name": "Sushi World",
+      "image": "homepageUser/sushi_word.jpg",
+      "rating": 4.9,
     },
   ];
   final List<Map<String, dynamic>> popularFoods = [

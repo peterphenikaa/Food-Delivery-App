@@ -22,6 +22,10 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _skip() {
+    Navigator.pushReplacementNamed(context, '/auth');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
                     buttonText: 'NEXT',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
+                    onSkipPressed: _skip,
                     image: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: Image.asset(
@@ -59,6 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                     buttonText: 'NEXT',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
+                    onSkipPressed: _skip,
                     image: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: Image.asset(
@@ -77,6 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                     buttonText: 'GET STARTED',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
+                    onSkipPressed: _skip,
                     image: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: Image.asset(

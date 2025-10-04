@@ -19,40 +19,38 @@ mongoose.connect('mongodb://localhost:27017/FoodDeliveryApp')
         ]
       },
       {
-        name: 'American Spicy Burger Shop',
+        name: 'Burger Heaven',
         address: '456 Burger Road',
-        description: 'Burger Mỹ cay nồng với gia vị đặc biệt.',
-        image: 'homepageUser/american_spicy_burger_shop.jpg',
-        rating: 4.6,
-        deliveryTime: 25,
-        categories: ['Burger', 'American'],
-        reviews: [
-          { user: 'Charlie', rating: 5, comment: 'Burger cay rất ngon, đúng gu!' }
-        ]
-      },
-      {
-        name: 'Cafenio Coffee Club',
-        address: '321 Coffee Ave',
-        description: 'Quán café phong cách hiện đại với đồ uống và món nhẹ.',
-        image: 'homepageUser/Cafenio_coffe_club.jpg',
+        description: 'Burger thơm ngon, tươi mới.',
+        image: 'homepageUser/burger_heaven.webp',
         rating: 4.5,
-        deliveryTime: 20,
-        categories: ['Coffee', 'Dessert'],
+        deliveryTime: 25,
+        categories: ['Burger', 'Fries'],
         reviews: [
-          { user: 'David', rating: 5, comment: 'Café ngon, không gian đẹp!' },
-          { user: 'Eva', rating: 4, comment: 'Thích các món bánh ngọt ở đây.' }
+          { user: 'Charlie', rating: 5, comment: 'Burger tuyệt vời!' }
         ]
       },
       {
-        name: 'Panshi Restaurant',
-        address: '555 Asian Blvd',
-        description: 'Nhà hàng Á Đông với các món ăn đặc sắc.',
-        image: 'homepageUser/Panshi_restaurant.jpg',
+        name: 'Sushi World',
+        address: '789 Sushi Blvd',
+        description: 'Sushi tươi ngon, chất lượng cao.',
+        image: 'homepageUser/sushi_word.jpg',
         rating: 4.9,
-        deliveryTime: 30,
-        categories: ['Asian', 'Chinese'],
+        deliveryTime: 40,
+        categories: ['Sushi', 'Japanese'],
+        reviews: []
+      },
+      {
+        name: 'Salad Fresh',
+        address: '321 Green Ave',
+        description: 'Salad tươi ngon, lành mạnh.',
+        image: 'homepageUser/salad_fresh.jpg',
+        rating: 4.3,
+        deliveryTime: 20,
+        categories: ['Salad', 'Healthy'],
         reviews: [
-          { user: 'Frank', rating: 5, comment: 'Món Á tuyệt vời, rất đúng khẩu vị!' }
+          { user: 'David', rating: 3, comment: 'Salad hơi nhạt.' },
+          { user: 'Eva', rating: 4, comment: 'Rất thích salad ở đây.' }
         ]
       }
     ];
