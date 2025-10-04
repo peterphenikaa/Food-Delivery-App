@@ -5,6 +5,7 @@ class OnboardingCard extends StatelessWidget {
   final String subtitle;
   final String buttonText;
   final VoidCallback onButtonPressed;
+  final VoidCallback? onSkipPressed;
   final Color? buttonColor;
   final int pageIndex;
   final int activeIndex;
@@ -17,6 +18,7 @@ class OnboardingCard extends StatelessWidget {
     required this.subtitle,
     required this.buttonText,
     required this.onButtonPressed,
+    this.onSkipPressed,
     this.buttonColor,
     required this.pageIndex,
     required this.activeIndex,
@@ -88,7 +90,7 @@ class OnboardingCard extends StatelessWidget {
               ),
               SizedBox(height: 8),
               TextButton(
-                onPressed: () {},
+                onPressed: onSkipPressed ?? () {},
                 style: TextButton.styleFrom(foregroundColor: Color(0xFF646982)),
                 child: Text('Skip'),
               ),

@@ -8,21 +8,21 @@ mongoose.connect('mongodb://localhost:27017/FoodDeliveryApp')
       {
         name: 'The Pizza Place',
         address: '123 Main St',
-        description: 'Pizza ngon nổi tiếng.',
-        image: 'pizza_place.jpg',
+        description: 'Pizza ngon nổi tiếng với công thức độc quyền.',
+        image: 'homepageUser/pizza_place.jpg',
         rating: 4.8,
         deliveryTime: 30,
         categories: ['Pizza', 'Drinks'],
         reviews: [
-          { user: 'Alice', rating: 5, comment: 'Rất ngon!' },
-          { user: 'Bob', rating: 4, comment: 'Phục vụ tốt.' }
+          { user: 'Alice', rating: 5, comment: 'Pizza ngon tuyệt vời!' },
+          { user: 'Bob', rating: 4, comment: 'Phục vụ tốt, đồ ăn ngon.' }
         ]
       },
       {
         name: 'Burger Heaven',
         address: '456 Burger Road',
         description: 'Burger thơm ngon, tươi mới.',
-        image: 'burger_heaven.jpg',
+        image: 'homepageUser/burger_heaven.webp',
         rating: 4.5,
         deliveryTime: 25,
         categories: ['Burger', 'Fries'],
@@ -34,7 +34,7 @@ mongoose.connect('mongodb://localhost:27017/FoodDeliveryApp')
         name: 'Sushi World',
         address: '789 Sushi Blvd',
         description: 'Sushi tươi ngon, chất lượng cao.',
-        image: 'sushi_world.jpg',
+        image: 'homepageUser/sushi_word.jpg',
         rating: 4.9,
         deliveryTime: 40,
         categories: ['Sushi', 'Japanese'],
@@ -44,7 +44,7 @@ mongoose.connect('mongodb://localhost:27017/FoodDeliveryApp')
         name: 'Salad Fresh',
         address: '321 Green Ave',
         description: 'Salad tươi ngon, lành mạnh.',
-        image: 'salad_fresh.jpg',
+        image: 'homepageUser/salad_fresh.jpg',
         rating: 4.3,
         deliveryTime: 20,
         categories: ['Salad', 'Healthy'],

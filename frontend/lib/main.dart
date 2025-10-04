@@ -27,7 +27,7 @@ class FoodDeliveryApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AuthProvider()),
       ],
       child: MaterialApp(
-        title: 'Food Delivery',
+        title: 'Giao Đồ Ăn',
         theme: ThemeData(primarySwatch: Colors.orange),
         initialRoute: '/splash',
         routes: {

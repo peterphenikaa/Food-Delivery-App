@@ -141,7 +141,22 @@ class _ProductListPageState extends State<ProductListPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text('Bộ lọc và sắp xếp'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.filter_list, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Text(
+                    'Bộ lọc và sắp xếp',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -174,18 +189,39 @@ class _ProductListPageState extends State<ProductListPage> {
                       },
                     ),
                     SizedBox(height: 16),
+                    Text(
+                      'Thứ tự sắp xếp:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: CheckboxListTile(
+                          child: RadioListTile<bool>(
                             title: Text('Tăng dần'),
-                            value: sortAscending,
+                            value: true,
+                            groupValue: sortAscending,
                             onChanged: (value) {
                               setDialogState(() {
                                 sortAscending = value!;
                               });
                             },
                             controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        Expanded(
+                          child: RadioListTile<bool>(
+                            title: Text('Giảm dần'),
+                            value: false,
+                            groupValue: sortAscending,
+                            onChanged: (value) {
+                              setDialogState(() {
+                                sortAscending = value!;
+                              });
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
                           ),
                         ),
                       ],
@@ -202,7 +238,11 @@ class _ProductListPageState extends State<ProductListPage> {
                           child: TextField(
                             decoration: InputDecoration(
                               labelText: 'Từ',
-                              border: OutlineInputBorder(),
+                              hintText: '0',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
@@ -212,12 +252,16 @@ class _ProductListPageState extends State<ProductListPage> {
                             },
                           ),
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: 12),
                         Expanded(
                           child: TextField(
                             decoration: InputDecoration(
                               labelText: 'Đến',
-                              border: OutlineInputBorder(),
+                              hintText: '1000000',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
@@ -236,54 +280,86 @@ class _ProductListPageState extends State<ProductListPage> {
                     ),
                     SizedBox(height: 8),
                     Row(
-                      children: List.generate(5, (index) {
-                        double starValue = index + 1.0;
-                        return GestureDetector(
-                          onTap: () {
-                            setDialogState(() {
-                              minRating = starValue;
-                            });
-                          },
-                          child: Icon(
-                            Icons.star,
-                            color: minRating >= starValue
-                                ? Colors.orange
-                                : Colors.grey[300],
-                            size: 32,
+                      children: [
+                        ...List.generate(5, (index) {
+                          double starValue = index + 1.0;
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                minRating = starValue;
+                              });
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(right: 4),
+                              child: Icon(
+                                Icons.star,
+                                color: minRating >= starValue
+                                    ? Colors.orange
+                                    : Colors.grey[300],
+                                size: 28,
+                              ),
+                            ),
+                          );
+                        }),
+                        SizedBox(width: 8),
+                        Text(
+                          minRating > 0 ? '${minRating.toInt()}+ sao' : 'Tất cả',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
                           ),
-                        );
-                      }),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               actions: [
-                TextButton(
-                  onPressed: () {
-                    setDialogState(() {
-                      sortBy = 'name';
-                      sortAscending = true;
-                      minPrice = 0;
-                      maxPrice = 1000000;
-                      minRating = 0;
-                    });
-                  },
-                  child: Text('Đặt lại'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Hủy'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _applyFilters();
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Áp dụng'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setDialogState(() {
+                          sortBy = 'name';
+                          sortAscending = true;
+                          minPrice = 0;
+                          maxPrice = 1000000;
+                          minRating = 0;
+                        });
+                      },
+                      child: Text(
+                        'Đặt lại',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'Hủy',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _applyFilters();
+                        });
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      ),
+                      child: Text('Áp dụng'),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -401,7 +477,7 @@ class _ProductListPageState extends State<ProductListPage> {
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.7,
+                      childAspectRatio: 0.65,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),
@@ -455,61 +531,60 @@ class _ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image Container
-            Container(
-              height: 130,
-              decoration: BoxDecoration(
-                color: Color(0xFFFFF5E1),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: product['image'] != null
-                        ? Image.asset(
-                            'assets/${product['image']}',
-                            height: 100,
-                            fit: BoxFit.contain,
-                          )
-                        : Icon(Icons.restaurant, size: 60, color: Colors.grey),
+            Expanded(
+              flex: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFF5E1),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
-                ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  child: product['image'] != null
+                      ? Image.asset(
+                          '${product['image']}',
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.restaurant, size: 60, color: Colors.grey),
+                ),
               ),
             ),
 
             // Product Info
             Expanded(
+              flex: 2,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          category,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    SizedBox(height: 4),
+                    Text(
+                      category,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

@@ -79,31 +79,31 @@ class _SearchPageState extends State<SearchPage> {
 
   final List<Map<String, dynamic>> suggestedRestaurants = [
     {
-      "name": "Pansi Restaurant",
-      "image": "assets/restaurant_img1.jpg",
-      "rating": 4.7,
+      "name": "The Pizza Place",
+      "image": "homepageUser/pizza_place.jpg",
+      "rating": 4.8,
     },
     {
-      "name": "American Spicy Burger Shop",
-      "image": "assets/restaurant_img2.jpg",
-      "rating": 4.3,
+      "name": "Burger Heaven",
+      "image": "homepageUser/burger_heaven.webp",
+      "rating": 4.5,
     },
     {
-      "name": "Cafenio Coffee Club",
-      "image": "assets/restaurant_img3.jpg",
-      "rating": 4.0,
+      "name": "Sushi World",
+      "image": "homepageUser/sushi_word.jpg",
+      "rating": 4.9,
     },
   ];
   final List<Map<String, dynamic>> popularFoods = [
     {
-      "image": "assets/pizza1.jpg",
+      "image": "homepageUser/european_pizza.jpg",
       "name": "European Pizza",
-      "restaurant": "Utora Coffee House",
+      "restaurant": "European Pizza",
     },
     {
-      "image": "assets/pizza2.jpg",
-      "name": "Buffalo Pizza",
-      "restaurant": "Cafenio Coffee Club",
+      "image": "homepageUser/buffano_pizza.jpg",
+      "name": "Buffano Pizza",
+      "restaurant": "Buffano Pizza",
     },
   ];
 
@@ -285,21 +285,36 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             );
                           },
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 16),
-                            child: Column(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(22),
-                                  child: Image.asset(food['image'], width: 47, height: 47, fit: BoxFit.cover),
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 16),
+                              child: SizedBox(
+                                width: 70,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(22),
+                                      child: Image.asset(food['image'], width: 45, height: 45, fit: BoxFit.cover),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      food['name'],
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Text(
+                                      food['restaurant'],
+                                      style: TextStyle(fontSize: 9, color: Colors.grey[700]),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(height: 4),
-                                Text(food['name'],
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                Text(food['restaurant'], style: TextStyle(fontSize: 11, color: Colors.grey[700])),
-                              ],
+                              ),
                             ),
-                          ),
                         )).toList(),
                       ),
                     ),
@@ -377,7 +392,7 @@ class _SearchPageState extends State<SearchPage> {
                               height: 50,
                               color: Color(0xffffe1c2),
                               child: item['image'] != null
-                                  ? Image.asset('assets/${item['image']}', fit: BoxFit.cover)
+                                  ? Image.asset('${item['image']}', fit: BoxFit.cover)
                                   : Icon(Icons.fastfood, color: Colors.orange),
                             ),
                           ),

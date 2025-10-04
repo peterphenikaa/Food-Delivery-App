@@ -140,8 +140,8 @@ class _AllRestaurantsPageState extends State<AllRestaurantsPage> {
               padding: const EdgeInsets.only(bottom: 12),
               child: RestaurantCard(
                 imagePath: restaurant['image'] != null
-                    ? 'assets/${restaurant['image']}'
-                    : 'assets/homepageUser/restaurant_img1.jpg',
+                    ? '${restaurant['image']}'
+                    : 'homepageUser/restaurant_img1.jpg',
                 name: restaurant['name'] ?? 'Restaurant',
                 tags: (restaurant['categories'] as List?)
                     ?.join(' - ') ??

@@ -216,7 +216,6 @@ class OrderSuccessPage extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Mã đơn hàng:',
@@ -225,19 +224,23 @@ class OrderSuccessPage extends StatelessWidget {
                   color: Colors.grey[600],
                 ),
               ),
-              Text(
-                '#$orderId',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '#$orderId',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Tổng tiền:',
@@ -246,19 +249,23 @@ class OrderSuccessPage extends StatelessWidget {
                   color: Colors.grey[600],
                 ),
               ),
-              Text(
-                '₫${totalAmount.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '₫${totalAmount.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Thời gian dự kiến:',
@@ -267,12 +274,17 @@ class OrderSuccessPage extends StatelessWidget {
                   color: Colors.grey[600],
                 ),
               ),
-              Text(
-                '20-30 phút',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '20-30 phút',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

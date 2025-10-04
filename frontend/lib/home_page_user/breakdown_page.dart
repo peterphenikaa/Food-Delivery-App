@@ -258,7 +258,7 @@ class BreakdownPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: item.image != null
                   ? Image.asset(
-                      'assets/${item.image}',
+                      '${item.image}',
                       fit: BoxFit.cover,
                     )
                   : Icon(

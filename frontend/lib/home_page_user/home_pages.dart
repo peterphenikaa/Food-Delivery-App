@@ -12,6 +12,7 @@ import 'cart_page.dart';
 import 'restaurant_detail_page.dart';
 import 'address_provider.dart';
 import 'edit_address_page.dart';
+import '../auth/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -153,35 +154,28 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff8f8f8),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ListView(
-            children: [
-              const SizedBox(height: 8),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListView(
+                children: [
+                  const SizedBox(height: 8),
               Consumer<AddressProvider>(
                 builder: (context, addressProvider, child) {
                   return Row(
                     children: [
                       CircleAvatar(
-                        radius: 18,
-                        backgroundColor: Colors.grey[300],
+                        radius: 20,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: AssetImage('homepageUser/user_icon.jpg'),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const EditAddressPage(
-                                  userId: 'user123',
-                                ),
-                              ),
-                            );
-                            if (result == true) {
-                              addressProvider.loadAddresses('user123');
-                            }
+                          onTap: () {
+                            // Bỏ chuyển hướng - chỉ hiển thị địa chỉ hiện tại
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,17 +260,22 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 24),
-              RichText(
-                text: const TextSpan(
-                  text: "Chào Halal, ",
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                  children: [
-                    TextSpan(
-                      text: "Chúc ngày mới tốt lành!",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  final userName = authProvider.userName ?? 'Bạn';
+                  return RichText(
+                    text: TextSpan(
+                      text: "Chào $userName, ",
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                      children: [
+                        TextSpan(
+                          text: "Chúc ngày mới tốt lành!",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Container(
@@ -339,13 +338,14 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16),
 
               SizedBox(
-                height: 80,
+                height: 95,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
                     CategoryButton(
-                      icon: Icons.fastfood,
+                      icon: Icons.restaurant_menu,
                       label: "Tất cả danh mục",
+                      color: Color(0xFFFF6B6B),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -359,6 +359,7 @@ class _HomePageState extends State<HomePage> {
                     CategoryButton(
                       icon: Icons.lunch_dining,
                       label: "Burger",
+                      color: Color(0xFFFF8C42),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -371,6 +372,7 @@ class _HomePageState extends State<HomePage> {
                     CategoryButton(
                       icon: Icons.local_pizza,
                       label: "Pizza",
+                      color: Color(0xFFE74C3C),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -381,8 +383,9 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     CategoryButton(
-                      icon: Icons.lunch_dining,
+                      icon: Icons.set_meal,
                       label: "Sandwich",
+                      color: Color(0xFFF39C12),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -394,8 +397,9 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     CategoryButton(
-                      icon: Icons.set_meal,
+                      icon: Icons.dining,
                       label: "Hot Dog",
+                      color: Color(0xFFE67E22),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -409,6 +413,7 @@ class _HomePageState extends State<HomePage> {
                     CategoryButton(
                       icon: Icons.fastfood,
                       label: "Fast Food",
+                      color: Color(0xFF3498DB),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -420,8 +425,9 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     CategoryButton(
-                      icon: Icons.emoji_food_beverage,
+                      icon: Icons.eco,
                       label: "Salad",
+                      color: Color(0xFF27AE60),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -484,8 +490,8 @@ class _HomePageState extends State<HomePage> {
                 ...restaurants.take(2).map((restaurant) {
                   return RestaurantCard(
                     imagePath: restaurant['image'] != null
-                        ? 'assets/${restaurant['image']}'
-                        : 'assets/homepageUser/restaurant_img1.jpg',
+                        ? '${restaurant['image']}'
+                        : 'homepageUser/restaurant_img1.jpg',
                     name: restaurant['name'] ?? 'Restaurant',
                     tags: (restaurant['categories'] as List?)?.join(' - ') ?? 'Food',
                     rating: (restaurant['rating'] ?? 4.7).toDouble(),
@@ -505,9 +511,79 @@ class _HomePageState extends State<HomePage> {
                 }).toList(),
 
               const SizedBox(height: 24),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+          
+          // Icon đăng xuất tròn ở góc dưới bên phải
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: () => _showLogoutDialog(context),
+              backgroundColor: Colors.red[600],
+              child: const Icon(
+                Icons.logout,
+                color: Colors.white,
+                size: 24,
+              ),
+              elevation: 4,
+              mini: false,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận đăng xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logout(context);
+              },
+              child: const Text(
+                'Đăng xuất',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout(BuildContext context) {
+    // Xóa thông tin user khỏi AuthProvider
+    Provider.of<AuthProvider>(context, listen: false).clear();
+    
+    // Xóa thông tin cart
+    Provider.of<CartProvider>(context, listen: false).clearCart();
+    
+    // Chuyển về trang login
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    );
+    
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã đăng xuất thành công'),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -530,19 +606,51 @@ class CategoryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: GestureDetector(
         onTap: onTap,
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 21,
-              backgroundColor: color.withOpacity(0.15),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(height: 3),
-            Text(label, style: const TextStyle(fontSize: 13)),
-          ],
+        child: SizedBox(
+          width: 64,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color.withOpacity(0.8), color],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 26),
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 28,
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -571,7 +679,8 @@ class RestaurantCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 1,
+        elevation: 3,
+        shadowColor: Colors.black.withOpacity(0.15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,18 +689,32 @@ class RestaurantCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(14),
               ),
-              child: Image.asset(
-                imagePath,
-                height: 110,
+              child: Container(
+                height: 200,
                 width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 110,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.restaurant, size: 50),
-                  );
-                },
+                color: Colors.grey[50],
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.matrix([
+                    1.2, 0, 0, 0, 10,    // Red channel - tăng brightness
+                    0, 1.2, 0, 0, 10,    // Green channel
+                    0, 0, 1.2, 0, 10,    // Blue channel
+                    0, 0, 0, 1, 0,       // Alpha channel
+                  ]),
+                  child: Image.asset(
+                    imagePath,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.restaurant, size: 50),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
             Padding(
