@@ -48,6 +48,18 @@ router.post('/', async (req, res) => {
   }
 });
 
+// GET /api/foods/:id - Get single food item
+router.get('/:id', async (req, res) => {
+  try {
+    const food = await Food.findById(req.params.id);
+    if (!food) {
+      return res.status(404).json({ error: 'Food not found' });
+    }
+    res.json(food);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Lấy tất cả review của món ăn
 router.get('/:id/reviews', async (req, res) => {

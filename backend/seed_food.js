@@ -14,16 +14,54 @@ async function run() {
   });
   console.log("Connected to", MONGO);
 
-  const restaurantMongoId = new mongoose.Types.ObjectId('65123f0e8efc71f888d2a112');
+  // First, seed restaurants to get their IDs
+  const Restaurant = require("./models/restaurant");
+  await Restaurant.deleteMany({});
+  
+  const restaurants = [
+    {
+      name: 'The Pizza Place',
+      address: '123 Main St',
+      description: 'Pizza ngon nổi tiếng.',
+      image: 'pizza_place.jpg',
+      rating: 4.8,
+      deliveryTime: 30,
+      categories: ['Pizza', 'Salad', 'Drinks'],
+      reviews: [
+        { user: 'Alice', rating: 5, comment: 'Rất ngon!' },
+        { user: 'Bob', rating: 4, comment: 'Phục vụ tốt.' }
+      ]
+    },
+    {
+      name: 'Burger Heaven',
+      address: '456 Burger Road',
+      description: 'Burger thơm ngon, tươi mới.',
+      image: 'burger_heaven.jpg',
+      rating: 4.5,
+      deliveryTime: 25,
+      categories: ['Burger', 'Hot Dog', 'Fast Food', 'Fries'],
+      reviews: [
+        { user: 'Charlie', rating: 5, comment: 'Burger tuyệt vời!' }
+      ]
+    }
+  ];
+
+  const createdRestaurants = await Restaurant.insertMany(restaurants);
+  console.log("Inserted restaurants:", createdRestaurants.map(r => r.name));
+  
+  // Get restaurant IDs
+  const pizzaPlaceId = createdRestaurants[0]._id; // The Pizza Place
+  const burgerHeavenId = createdRestaurants[1]._id; // Burger Heaven
 
   const seedFoods = [
+    // BURGER HEAVEN - Burger, Hot Dog, Fast Food
     {
       name: "Burger Classic",
       category: "Burger",
       price: 35000,
-      image: "homepageUser/burger_classic.jpg",
+      image: "assets/homepageUser/burger_img1.jpg",
       description: "Burger thịt bò ngon với rau xanh tươi và sốt đặc biệt",
-      restaurantId: restaurantMongoId,
+      restaurantId: burgerHeavenId,
       isAvailable: true,
       rating: 4.5,
       deliveryTime: 30,
@@ -33,37 +71,12 @@ async function run() {
       ],
     },
     {
-      name: "Pepperoni Pizza",
-      category: "Pizza",
-      price: 89000,
-      image: "homepageUser/pepperoni_pizza.jpg",
-      description: "Pizza pepperoni với phô mai mozzarella thơm ngon",
-      restaurantId: restaurantMongoId,
-      isAvailable: true,
-      rating: 4.7,
-      deliveryTime: 25,
-      reviews: [
-        { user: 'Charlie', rating: 5, comment: 'Phô mai thơm, topping nhiều', createdAt: new Date() }
-      ],
-    },
-    {
-      name: "Chicken Sandwich",
-      category: "Sandwich",
-      price: 45000,
-      image: "homepageUser/chicken_sandwich.jpg",
-      description: "Sandwich gà nướng với rau tươi và sốt mayonnaise",
-      restaurantId: restaurantMongoId,
-      isAvailable: true,
-      rating: 4.3,
-      deliveryTime: 20,
-    },
-    {
       name: "Hot Dog Special",
       category: "Hot Dog",
       price: 25000,
-      image: "homepageUser/hot_dog_special.jpg",
+      image: "assets/homepageUser/restaurant_img2.jpg",
       description: "Hot dog đặc biệt với xúc xích Đức và tương cà",
-      restaurantId: restaurantMongoId,
+      restaurantId: burgerHeavenId,
       isAvailable: true,
       rating: 4.2,
       deliveryTime: 30,
@@ -72,31 +85,20 @@ async function run() {
       name: "Combo Fast Food",
       category: "Fast Food",
       price: 99000,
-      image: "homepageUser/combo_fast_food.jpg",
+      image: "assets/homepageUser/restaurant_img1.jpg",
       description: "Combo gồm burger, khoai tây chiên và nước ngọt",
-      restaurantId: restaurantMongoId,
+      restaurantId: burgerHeavenId,
       isAvailable: true,
       rating: 4.6,
       deliveryTime: 18,
     },
     {
-      name: "Caesar Salad",
-      category: "Salad",
-      price: 52000,
-      image: "homepageUser/caesar_salad.jpg",
-      description: "Salad Caesar với rau xà lách tươi và sốt Caesar đặc biệt",
-      restaurantId: restaurantMongoId,
-      isAvailable: true,
-      rating: 4.4,
-      deliveryTime: 15,
-    },
-    {
       name: "Beef Steak",
       category: "Fast Food",
       price: 120000,
-      image: "homepageUser/beef_steak.webp",
+      image: "assets/homepageUser/restaurant_img1.jpg",
       description: "Bít tết thịt bò Úc nướng vừa chín tới",
-      restaurantId: restaurantMongoId,
+      restaurantId: burgerHeavenId,
       isAvailable: true,
       rating: 4.8,
       deliveryTime: 35,
@@ -105,40 +107,50 @@ async function run() {
       name: "Fish and Chips",
       category: "Fast Food",
       price: 65000,
-      image: "homepageUser/fish_and_chips.jpg",
+      image: "assets/homepageUser/restaurant_img2.jpg",
       description: "Cá chiên giòn với khoai tây chiên kiểu Anh",
-      restaurantId: restaurantMongoId,
+      restaurantId: burgerHeavenId,
       isAvailable: true,
       rating: 4.1,
       deliveryTime: 25,
     },
+    
+    // THE PIZZA PLACE - Pizza, Salad
     {
-      name: "European Pizza",
+      name: "Pepperoni Pizza",
       category: "Pizza",
-      price: 95000,
-      image: "homepageUser/european_pizza.jpg",
-      description: "Pizza phong cách Châu Âu với hương vị độc đáo và tinh tế",
-      restaurantId: restaurantMongoId,
+      price: 89000,
+      image: "assets/homepageUser/pizza_img1.webp",
+      description: "Pizza pepperoni với phô mai mozzarella thơm ngon",
+      restaurantId: pizzaPlaceId,
       isAvailable: true,
       rating: 4.7,
-      deliveryTime: 30,
+      deliveryTime: 25,
       reviews: [
-        { user: 'Emma', rating: 5, comment: 'Pizza phong cách Châu Âu tuyệt vời!', createdAt: new Date() }
+        { user: 'Charlie', rating: 5, comment: 'Phô mai thơm, topping nhiều', createdAt: new Date() }
       ],
     },
     {
-      name: "Buffalo Pizza",
-      category: "Pizza",
-      price: 92000,
-      image: "homepageUser/buffano_pizza.jpg",
-      description: "Pizza Buffalo với phô mai mozzarella và sốt cay đặc biệt",
-      restaurantId: restaurantMongoId,
+      name: "Caesar Salad",
+      category: "Salad",
+      price: 52000,
+      image: "assets/homepageUser/restaurant_img2.jpg",
+      description: "Salad Caesar với rau xà lách tươi và sốt Caesar đặc biệt",
+      restaurantId: pizzaPlaceId,
       isAvailable: true,
-      rating: 4.8,
-      deliveryTime: 28,
-      reviews: [
-        { user: 'John', rating: 5, comment: 'Pizza Buffalo cay ngon tuyệt!', createdAt: new Date() }
-      ],
+      rating: 4.4,
+      deliveryTime: 15,
+    },
+    {
+      name: "Chicken Sandwich",
+      category: "Sandwich",
+      price: 45000,
+      image: "assets/homepageUser/restaurant_img2.jpg",
+      description: "Sandwich gà nướng với rau tươi và sốt mayonnaise",
+      restaurantId: pizzaPlaceId,
+      isAvailable: true,
+      rating: 4.3,
+      deliveryTime: 20,
     },
   ];
 
