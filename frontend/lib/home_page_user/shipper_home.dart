@@ -253,33 +253,66 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadOrders();
-          await _loadMyOrders();
-        },
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildStatsCards(),
-                  const SizedBox(height: 24),
-                  _buildSectionHeader('🔔 Đơn hàng chờ nhận', pendingOrders.length),
-                  const SizedBox(height: 12),
-                  if (pendingOrders.isEmpty)
-                    _buildEmptyState('Chưa có đơn hàng mới')
-                  else
-                    ...pendingOrders.map((order) => _buildPendingOrderCard(order)),
-                  const SizedBox(height: 24),
-                  _buildSectionHeader('📦 Đơn hàng của tôi', myOrders.length),
-                  const SizedBox(height: 12),
-                  if (myOrders.isEmpty)
-                    _buildEmptyState('Chưa có đơn hàng nào')
-                  else
-                    ...myOrders.map((order) => _buildMyOrderCard(order)),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              await _loadOrders();
+              await _loadMyOrders();
+            },
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100), // Thêm padding bottom để tránh che khuất FAB
+                    children: [
+                      _buildStatsCards(),
+                      const SizedBox(height: 24),
+                      _buildSectionHeader('🔔 Đơn hàng chờ nhận', pendingOrders.length),
+                      const SizedBox(height: 12),
+                      if (pendingOrders.isEmpty)
+                        _buildEmptyState('Chưa có đơn hàng mới')
+                      else
+                        ...pendingOrders.map((order) => _buildPendingOrderCard(order)),
+                      const SizedBox(height: 24),
+                      _buildSectionHeader('📦 Đơn hàng của tôi', myOrders.length),
+                      const SizedBox(height: 12),
+                      if (myOrders.isEmpty)
+                        _buildEmptyState('Chưa có đơn hàng nào')
+                      else
+                        ...myOrders.map((order) => _buildMyOrderCard(order)),
+                    ],
+                  ),
+          ),
+          
+          // Icon đăng xuất tròn ở góc dưới bên phải cho shipper
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
+              child: FloatingActionButton(
+                onPressed: () => _showLogoutDialog(context),
+                backgroundColor: Colors.blue[600],
+                child: const Icon(
+                  Icons.logout,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                elevation: 0,
+                mini: false,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -691,5 +724,56 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
       ),
     ),
   );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận đăng xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản shipper không?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logout(context);
+              },
+              child: const Text(
+                'Đăng xuất',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout(BuildContext context) {
+    // Xóa thông tin user khỏi AuthProvider
+    Provider.of<AuthProvider>(context, listen: false).clear();
+    
+    // Hủy timer polling
+    _pollTimer?.cancel();
+    
+    // Chuyển về trang login
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    );
+    
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã đăng xuất khỏi tài khoản shipper'),
+        backgroundColor: Colors.blue,
+      ),
+    );
   }
 }

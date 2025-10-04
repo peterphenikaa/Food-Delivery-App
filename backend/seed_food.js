@@ -23,7 +23,7 @@ async function run() {
       name: 'The Pizza Place',
       address: '123 Main St',
       description: 'Pizza ngon nổi tiếng.',
-      image: 'homepageUser/pizaa_place.jpg',
+      image: 'homepageUser/pizza_place.jpg',
       rating: 4.8,
       deliveryTime: 30,
       categories: ['Pizza', 'Salad', 'Drinks'],

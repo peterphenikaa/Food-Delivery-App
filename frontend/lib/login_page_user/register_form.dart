@@ -37,13 +37,13 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
     if (name.isEmpty || email.isEmpty || password.isEmpty || houseNumber.isEmpty || ward.isEmpty || city.isEmpty) {
       print('❌ Validation failed - empty fields');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields')),
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin')),
       );
       return;
     }
     if (_phoneController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter phone number')),
+        SnackBar(content: Text('Vui lòng nhập số điện thoại')),
       );
       return;
     }
@@ -51,7 +51,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
     if (password != confirmPassword) {
       print('❌ Validation failed - passwords do not match');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
+        SnackBar(content: Text('Mật khẩu không khớp')),
       );
       return;
     }
@@ -59,7 +59,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
     if (password.length < 6) {
       print('❌ Validation failed - password too short');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password must be at least 6 characters')),
+        SnackBar(content: Text('Mật khẩu phải có ít nhất 6 ký tự')),
       );
       return;
     }
@@ -97,7 +97,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
         final body = jsonDecode(res.body);
         print('✅ Registration successful');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Account created successfully!')),
+          SnackBar(content: Text('Tạo tài khoản thành công!')),
         );
         // Navigate back to login
         Navigator.pop(context);
@@ -105,13 +105,13 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
         final body = jsonDecode(res.body);
         print('❌ Registration failed: ${body['error']}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(body['error'] ?? 'Registration failed')),
+          SnackBar(content: Text(body['error'] ?? 'Đăng ký thất bại')),
         );
       }
     } catch (e) {
       print('💥 Exception occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
+        SnackBar(content: Text('Lỗi mạng: $e')),
       );
     } finally {
       print('🔄 Setting loading = false');
@@ -190,7 +190,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                         children: [
                           SizedBox(height: 20),
                           Text(
-                            'Sign Up',
+                            'ĐĂNG KÝ',
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -198,7 +198,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            'Please sign up to get started',
+                            'Vui lòng đăng ký để bắt đầu',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: Colors.white70,
                             ),
@@ -217,7 +217,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                   children: [
                     SizedBox(height: 20),
                     // Name field
-                    Text('NAME', 
+                    Text('TÊN', 
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
@@ -227,7 +227,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        hintText: 'John doe',
+                        hintText: 'Nguyễn Văn A',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Color(0xFFF3F7FB),
@@ -254,7 +254,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: 'example@gmail.com',
+                        hintText: 'vidu@gmail.com',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Color(0xFFF3F7FB),
@@ -271,7 +271,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     SizedBox(height: 20),
 
                     // House Number field
-                    Text('HOUSE NUMBER', 
+                    Text('SỐ NHÀ', 
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
@@ -298,7 +298,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     SizedBox(height: 20),
 
             // Phone field
-            Text('PHONE NUMBER', 
+            Text('SỐ ĐIỆN THOẠI', 
               style: theme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: Colors.grey[600],
@@ -326,7 +326,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
             SizedBox(height: 20),
 
                     // Ward field
-                    Text('WARD', 
+                    Text('PHƯỜNG/XÃ', 
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
@@ -336,7 +336,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     TextField(
                       controller: _wardController,
                       decoration: InputDecoration(
-                        hintText: 'Phuong 2',
+                        hintText: 'Phường 2',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Color(0xFFF3F7FB),
@@ -353,7 +353,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     SizedBox(height: 20),
 
                     // City field
-                    Text('CITY', 
+                    Text('THÀNH PHỐ', 
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
@@ -363,7 +363,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     TextField(
                       controller: _cityController,
                       decoration: InputDecoration(
-                        hintText: 'Ha Noi',
+                        hintText: 'Hà Nội',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Color(0xFFF3F7FB),
@@ -380,7 +380,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     SizedBox(height: 20),
                     
                     // Password field
-                    Text('PASSWORD', 
+                    Text('MẬT KHẨU', 
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
@@ -418,7 +418,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                     SizedBox(height: 20),
                     
                     // Confirm Password field
-                    Text('RE-TYPE PASSWORD', 
+                    Text('NHẬP LẠI MẬT KHẨU', 
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey[600],
@@ -468,7 +468,7 @@ class _RegisterFormPageState extends State<RegisterFormPage> {
                               ),
                             )
                           : Text(
-                              'SIGN UP',
+                              'ĐĂNG KÝ',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

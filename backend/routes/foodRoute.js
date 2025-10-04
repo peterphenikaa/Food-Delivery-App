@@ -9,7 +9,7 @@ function escapeRegex(text) {
 
 router.get('/', async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, restaurantId } = req.query;
 
     const filter = {};
 
@@ -25,6 +25,11 @@ router.get('/', async (req, res) => {
         { description: { $regex: q, $options: 'i' } },
         { category: { $regex: q, $options: 'i' } },
       ];
+    }
+
+    // Filter by restaurantId if provided
+    if (restaurantId && restaurantId.trim()) {
+      filter.restaurantId = restaurantId.trim();
     }
 
     // Debug logs to trace filtering behavior

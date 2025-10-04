@@ -12,6 +12,7 @@ import 'cart_page.dart';
 import 'restaurant_detail_page.dart';
 import 'address_provider.dart';
 import 'edit_address_page.dart';
+import '../auth/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -153,12 +154,14 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff8f8f8),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ListView(
-            children: [
-              const SizedBox(height: 8),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListView(
+                children: [
+                  const SizedBox(height: 8),
               Consumer<AddressProvider>(
                 builder: (context, addressProvider, child) {
                   return Row(
@@ -171,18 +174,8 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const EditAddressPage(
-                                  userId: 'user123',
-                                ),
-                              ),
-                            );
-                            if (result == true) {
-                              addressProvider.loadAddresses('user123');
-                            }
+                          onTap: () {
+                            // Bỏ chuyển hướng - chỉ hiển thị địa chỉ hiện tại
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,17 +260,22 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 24),
-              RichText(
-                text: const TextSpan(
-                  text: "Chào Halal, ",
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                  children: [
-                    TextSpan(
-                      text: "Chúc ngày mới tốt lành!",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  final userName = authProvider.userName ?? 'Bạn';
+                  return RichText(
+                    text: TextSpan(
+                      text: "Chào $userName, ",
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                      children: [
+                        TextSpan(
+                          text: "Chúc ngày mới tốt lành!",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Container(
@@ -513,9 +511,79 @@ class _HomePageState extends State<HomePage> {
                 }).toList(),
 
               const SizedBox(height: 24),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+          
+          // Icon đăng xuất tròn ở góc dưới bên phải
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: () => _showLogoutDialog(context),
+              backgroundColor: Colors.red[600],
+              child: const Icon(
+                Icons.logout,
+                color: Colors.white,
+                size: 24,
+              ),
+              elevation: 4,
+              mini: false,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận đăng xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logout(context);
+              },
+              child: const Text(
+                'Đăng xuất',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout(BuildContext context) {
+    // Xóa thông tin user khỏi AuthProvider
+    Provider.of<AuthProvider>(context, listen: false).clear();
+    
+    // Xóa thông tin cart
+    Provider.of<CartProvider>(context, listen: false).clearCart();
+    
+    // Chuyển về trang login
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    );
+    
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã đăng xuất thành công'),
+        backgroundColor: Colors.green,
       ),
     );
   }

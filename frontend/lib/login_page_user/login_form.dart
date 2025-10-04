@@ -45,7 +45,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
     final password = _passwordController.text;
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter email and password')),
+        SnackBar(content: Text('Vui lòng nhập email và mật khẩu')),
       );
       return;
     }
@@ -73,7 +73,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
           }
         } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Welcome ${body['user']['name'] ?? ''}')),
+          SnackBar(content: Text('Chào mừng ${body['user']['name'] ?? ''}')),
         );
         // Navigate by role
         final role = (body['user']['role'] ?? 'user').toString();
@@ -103,13 +103,13 @@ class _LoginFormPageState extends State<LoginFormPage> {
       } else {
         final body = jsonDecode(res.body);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(body['error'] ?? 'Login failed')),
+          SnackBar(content: Text(body['error'] ?? 'Đăng nhập thất bại')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Network error')));
+      ).showSnackBar(SnackBar(content: Text('Lỗi kết nối mạng')));
     } finally {
       setState(() => _loading = false);
     }
@@ -152,7 +152,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Log In',
+                      'ĐĂNG NHẬP',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -160,7 +160,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Please sign in to your existing account',
+                      'Vui lòng đăng nhập vào tài khoản của bạn',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white70,
                       ),
@@ -192,7 +192,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: 'example@gmail.com',
+                        hintText: 'vidu@gmail.com',
                         filled: true,
                         fillColor: Color(0xFFF3F7FB),
                         border: OutlineInputBorder(
@@ -202,13 +202,13 @@ class _LoginFormPageState extends State<LoginFormPage> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    Text('PASSWORD', style: theme.textTheme.labelSmall),
+                    Text('MẬT KHẨU', style: theme.textTheme.labelSmall),
                     SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        hintText: '**********',
+                        hintText: '••••••••••',
                         filled: true,
                         fillColor: Color(0xFFF3F7FB),
                         border: OutlineInputBorder(
@@ -240,13 +240,13 @@ class _LoginFormPageState extends State<LoginFormPage> {
                                 }
                               },
                             ),
-                            Text('Remember me'),
+                            Text('Ghi nhớ đăng nhập'),
                           ],
                         ),
                         TextButton(
                           onPressed: () {},
                           child: Text(
-                            'Forgot Password',
+                            'Quên mật khẩu?',
                             style: TextStyle(color: Colors.orange),
                           ),
                         ),
@@ -257,7 +257,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                       onPressed: _loading ? null : _login,
                       child: _loading
                           ? CircularProgressIndicator(color: Colors.white)
-                          : Text('LOG IN'),
+                          : Text('ĐĂNG NHẬP'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         padding: EdgeInsets.symmetric(vertical: 16),
@@ -269,7 +269,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Don't have an account? ",
+                            "Chưa có tài khoản? ",
                             style: theme.textTheme.bodyMedium,
                           ),
                           GestureDetector(
@@ -277,7 +277,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                               Navigator.pushNamed(context, '/register');
                             },
                             child: Text(
-                              'SIGN UP',
+                              'ĐĂNG KÝ',
                               style: TextStyle(
                                 color: Colors.orange,
                                 fontWeight: FontWeight.bold,
@@ -288,7 +288,7 @@ class _LoginFormPageState extends State<LoginFormPage> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Center(child: Text('Or')),
+                    Center(child: Text('Hoặc')),
                     SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
