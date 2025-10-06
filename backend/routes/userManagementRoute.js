@@ -14,6 +14,38 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Tạo người dùng mới (ví dụ: tạo shipper)
+router.post('/', async (req, res) => {
+  try {
+    const { name, email, password, phoneNumber, address, role } = req.body;
+
+    if (!name || !email || !password || !phoneNumber || !address) {
+      return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
+    }
+
+    // Email phải duy nhất
+    const exists = await Login.findOne({ email });
+    if (exists) {
+      return res.status(409).json({ error: 'Email đã tồn tại' });
+    }
+
+    const user = await Login.create({
+      name,
+      email,
+      password, // NOTE: demo - chưa mã hóa, có thể tích hợp bcrypt sau
+      phoneNumber,
+      address,
+      role: role || 'shipper', // mặc định tạo mới là shipper
+    });
+
+    const out = user.toObject();
+    delete out.password;
+    res.status(201).json(out);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Lấy thông tin chi tiết một người dùng
 router.get('/:id', async (req, res) => {
   try {

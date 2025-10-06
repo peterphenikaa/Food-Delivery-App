@@ -17,13 +17,38 @@ class _AdminOrderCountPageState extends State<AdminOrderCountPage> {
 
   // Filters
   String? _selectedRestaurantId; // null => all restaurants
-  String _selectedStatus = 'all'; // all | requested | preparing
+  String _selectedStatus = 'all'; // all | PENDING | ASSIGNED
 
   // Restaurant options
   List<Map<String, dynamic>> _restaurants = [];
 
   // Orders list
   List<Map<String, dynamic>> _orders = [];
+
+  Future<void> _updateStatus(String orderId, String newStatus) async {
+    try {
+      final uri = Uri.parse('${_api.baseUrl}/api/orders/$orderId/status');
+      final res = await http.put(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': newStatus}),
+      );
+      if (res.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cập nhật trạng thái thành $newStatus')),
+          );
+        }
+        await _reloadAll();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lỗi cập nhật trạng thái: ${res.statusCode}')),
+          );
+        }
+      }
+    } catch (_) {}
+  }
 
   @override
   void initState() {
@@ -53,7 +78,7 @@ class _AdminOrderCountPageState extends State<AdminOrderCountPage> {
       int value;
       if (_selectedStatus == 'all') {
         value = counters.requests + counters.running;
-      } else if (_selectedStatus == 'requested') {
+      } else if (_selectedStatus == 'PENDING') {
         value = counters.requests;
       } else {
         value = counters.running;
@@ -66,17 +91,23 @@ class _AdminOrderCountPageState extends State<AdminOrderCountPage> {
 
   Future<void> _loadOrders() async {
     try {
+      // Luôn lấy đầy đủ đơn (theo nhà hàng nếu có), sau đó lọc theo _selectedStatus ở client
       final params = <String, String>{};
       if (_selectedRestaurantId != null) params['restaurantId'] = _selectedRestaurantId!;
-      if (_selectedStatus != 'all') params['status'] = _selectedStatus;
       final uri = Uri.parse('${_api.baseUrl}/api/orders').replace(queryParameters: params.isEmpty ? null : params);
       final res = await AdminHttp.get(uri);
       if (res.statusCode == 200) {
         final data = AdminHttp.decodeList(res.body);
-        // Giữ lại chỉ 2 trạng thái của nhà hàng: requested, preparing
+
+        // Xác định tập trạng thái cần hiển thị theo bộ lọc
+        final Set<String> allowed = _selectedStatus == 'all'
+            ? {'PENDING', 'ASSIGNED'}
+            : {_selectedStatus};
+
+        // Chỉ hiển thị tới khi nhà hàng bàn giao cho shipper (ẩn DELIVERING/PICKED_UP/DELIVERED/CANCELLED)
         final filtered = data.where((o) {
-          final s = (o['status'] ?? '').toString().toLowerCase();
-          return s == 'requested' || s == 'preparing';
+          final s = (o['status'] ?? '').toString();
+          return allowed.contains(s);
         }).toList();
         setState(() => _orders = filtered);
       } else {
@@ -164,8 +195,8 @@ class _AdminOrderCountPageState extends State<AdminOrderCountPage> {
                               ),
                               items: const [
                                 DropdownMenuItem(value: 'all', child: Text('Tất cả')),
-                                DropdownMenuItem(value: 'requested', child: Text('Đang chờ')),
-                                DropdownMenuItem(value: 'preparing', child: Text('Đang xử lý')),
+                                DropdownMenuItem(value: 'PENDING', child: Text('Đang chờ')),
+                                DropdownMenuItem(value: 'ASSIGNED', child: Text('Đang chuẩn bị')),
                               ],
                               onChanged: (v) {
                                 if (v == null) return;
@@ -204,7 +235,22 @@ class _AdminOrderCountPageState extends State<AdminOrderCountPage> {
                             return ListTile(
                               title: Text('Đơn $id'),
                               subtitle: Text(timeText),
-                              trailing: _StatusChip(status: status),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (status == 'PENDING')
+                                    TextButton(
+                                      onPressed: () async {
+                                        // Khi nhà hàng hoàn thành món -> chuyển PENDING -> ASSIGNED
+                                        await _updateStatus(id, 'ASSIGNED');
+                                      },
+                                      child: const Text('Hoàn thành'),
+                                    ),
+                                  // Trạng thái ASSIGNED: chờ shipper nhận, không cập nhật tiếp ở đây
+                                  const SizedBox(width: 8),
+                                  _StatusChip(status: status),
+                                ],
+                              ),
                             );
                           },
                         ),
@@ -221,9 +267,11 @@ class _StatusChip extends StatelessWidget {
 
   Color _colorFor(String s) {
     switch (s.toLowerCase()) {
-      case 'requested':
+      case 'PENDING':
         return Colors.orange;
-      case 'preparing':
+      case 'ASSIGNED':
+        return Colors.blue;
+      case 'DELIVERING':
         return Colors.blue;
       default:
         return Colors.black54;

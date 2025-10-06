@@ -12,6 +12,28 @@ router.get('/restaurants', async (req, res) => {
     }
 });
 
+// Tạo nhà hàng mới
+router.post('/restaurants', async (req, res) => {
+    try {
+        const { name, address, description, image, deliveryTime, categories } = req.body;
+        if (!name || !address) {
+            return res.status(400).json({ error: 'Thiếu name hoặc address' });
+        }
+        const r = await Restaurant.create({
+            name,
+            address,
+            description,
+            image,
+            deliveryTime: deliveryTime || 20,
+            categories: Array.isArray(categories) ? categories : [],
+        });
+        res.status(201).json(r);
+    } catch (err) {
+        console.error('Error creating restaurant:', err);
+        res.status(400).json({ error: 'Lỗi khi tạo nhà hàng' });
+    }
+});
+
 router.get('/restaurants/:id', async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);

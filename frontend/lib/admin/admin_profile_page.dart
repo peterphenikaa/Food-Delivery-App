@@ -5,6 +5,9 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'admin_profile_personal_info_page.dart';
+import 'package:provider/provider.dart';
+import '../auth/auth_provider.dart';
+import '../login_page_user/login_page.dart';
 import 'admin_profile_user_mgmt_page.dart';
 import 'admin_profile_shipper_mgmt_page.dart';
 import 'admin_profile_order_count_page.dart';
@@ -101,7 +104,16 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             _menuItem(Icons.receipt_long_outlined, 'Số lượng đơn hàng', () {
               Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AdminOrderCountPage()));
             }),
-            _menuItem(Icons.logout, 'Đăng xuất', () {}),
+            _menuItem(Icons.logout, 'Đăng xuất', () {
+              // Clear auth state and navigate to login
+              try {
+                Provider.of<AuthProvider>(context, listen: false).clear();
+              } catch (_) {}
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => LoginPage()),
+                (route) => false,
+              );
+            }),
           ]),
         ],
       ),

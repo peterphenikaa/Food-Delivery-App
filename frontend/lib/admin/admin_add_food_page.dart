@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'admin_api.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AdminAddFoodPage extends StatefulWidget {
   final Map<String, dynamic>? initial; // if provided -> edit mode
@@ -22,11 +27,49 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
   bool delivery = false;
   bool saving = false;
   late final AdminApi _api;
+  // Known asset images to auto-match with food names
+  static const List<String> _assetImages = [
+    'assets/homepageUser/burger_classic.jpg',
+    'assets/homepageUser/burger_heaven.webp',
+    'assets/homepageUser/chicken_sandwich.jpg',
+    'assets/homepageUser/hot_dog_special.jpg',
+    'assets/homepageUser/pepperoni_pizza.jpg',
+    'assets/homepageUser/european_pizza.jpg',
+    'assets/homepageUser/buffano_pizza.jpg',
+    'assets/homepageUser/caesar_salad.jpg',
+    'assets/homepageUser/salad_fresh.jpg',
+    'assets/homepageUser/fish_and_chips.jpg',
+    'assets/homepageUser/sushi_word.jpg',
+    'assets/assets_restaurant_img2.jpg', // fallback examples
+    'assets/pizza_place.jpg',
+  ];
+
+  String? _guessAssetForName(String name) {
+    final slug = name.toLowerCase();
+    String? best;
+    int bestScore = 0;
+    for (final p in _assetImages) {
+      final file = p.split('/').last.toLowerCase();
+      int score = 0;
+      for (final token in slug.split(RegExp(r'\s+'))) {
+        if (token.isEmpty) continue;
+        if (file.contains(token)) score++;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = p;
+      }
+    }
+    return bestScore > 0 ? best : null;
+  }
+  String? _selectedRestaurantId;
+  List<Map<String, dynamic>> _restaurants = [];
 
   @override
   void initState() {
     super.initState();
     _api = AdminApi.fromDefaults();
+    _loadRestaurants();
     // preload if editing
     final init = widget.initial;
     if (init != null) {
@@ -38,6 +81,17 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
       final ingredients = (init['ingredients'] as List?)?.map((e) => e.toString()).toList() ?? [];
       _ingredientsInput.text = ingredients.join(', ');
     }
+    // Auto-fill image based on name typing
+    _name.addListener(() {
+      final guess = _guessAssetForName(_name.text);
+      if (guess != null) {
+        // Only set if user chưa nhập hình
+        if (_image.text.isEmpty || _image.text.startsWith('assets')) {
+          _image.text = guess;
+          setState(() {});
+        }
+      }
+    });
   }
 
   @override
@@ -49,6 +103,22 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
     _category.dispose();
     _ingredientsInput.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadRestaurants() async {
+    try {
+      final res = await http.get(Uri.parse('${_api.baseUrl}/api/restaurants'));
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body) as List;
+        setState(() {
+          _restaurants = List<Map<String, dynamic>>.from(data);
+          if (_selectedRestaurantId == null && _restaurants.isNotEmpty) {
+            final firstId = (_restaurants.first['_id'] ?? _restaurants.first['id']).toString();
+            _selectedRestaurantId = firstId;
+          }
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _submit() async {
@@ -67,6 +137,7 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
         'image': _image.text.trim(),
         'description': _description.text.trim(),
         'ingredients': ingredients,
+        if (_selectedRestaurantId != null) 'restaurantId': _selectedRestaurantId,
       };
       if (widget.initial != null && widget.initial!['_id'] != null) {
         await _api.updateFood(widget.initial!['_id'].toString(), body);
@@ -97,13 +168,17 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
         title: const Text('Thêm món mới', style: TextStyle(color: Colors.black)),
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
               const Text('TÊN MÓN'),
               const SizedBox(height: 6),
               TextFormField(
@@ -129,11 +204,39 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
                 decoration: _decoration('Burger / Pizza / ...'),
               ),
               const SizedBox(height: 16),
+              const Text('NHÀ HÀNG'),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedRestaurantId,
+                      items: _restaurants.map((r) {
+                        final id = (r['_id'] ?? r['id']).toString();
+                        final name = (r['name'] ?? 'Nhà hàng').toString();
+                        return DropdownMenuItem<String>(value: id, child: Text(name));
+                      }).toList(),
+                      onChanged: (v) => setState(() => _selectedRestaurantId = v),
+                      validator: (v) => (v == null || v.isEmpty) ? 'Chọn nhà hàng' : null,
+                      decoration: _decoration('Chọn nhà hàng'),
+                    ),
+                  ),
+                ],
+              ),
               const Text('HÌNH (đường dẫn assets)'),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _image,
                 decoration: _decoration('assets/homepageUser/burger_img1.jpg'),
+              ),
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => _pickImageInto(_image),
+                  icon: const Icon(Icons.image),
+                  label: const Text('Chọn ảnh từ máy'),
+                ),
               ),
               const SizedBox(height: 16),
               const Text('MÔ TẢ'),
@@ -162,8 +265,10 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
                   child: Text(saving ? 'Đang lưu...' : 'LƯU'),
                 ),
               )
-            ],
-          ),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -180,6 +285,25 @@ class _AdminAddFoodPageState extends State<AdminAddFoodPage> {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
     );
+  }
+
+  // Removed create-restaurant form per requirements
+
+  Future<void> _pickImageInto(TextEditingController controller) async {
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (file == null) return;
+      if (kIsWeb) {
+        final Uint8List bytes = await file.readAsBytes();
+        final b64 = base64Encode(bytes);
+        final mime = file.mimeType ?? 'image/jpeg';
+        controller.text = 'data:$mime;base64,$b64';
+      } else {
+        controller.text = file.path;
+      }
+      setState(() {});
+    } catch (_) {}
   }
 }
 

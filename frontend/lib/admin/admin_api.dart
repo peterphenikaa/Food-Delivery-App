@@ -26,8 +26,8 @@ class AdminApi {
     }
     final data = json.decode(res.body) as Map<String, dynamic>;
     return AdminCounters(
-      running: (data['running'] ?? data['preparing'] ?? 0) as int,
-      requests: (data['requests'] ?? data['requested'] ?? 0) as int,
+      running: (data['running'] ?? 0) as int,
+      requests: (data['requests'] ?? 0) as int,
     );
   }
 
@@ -117,6 +117,25 @@ class AdminApi {
     }
     final data = json.decode(res.body) as List<dynamic>;
     return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<void> deleteNotification(String id) async {
+    final url = Uri.parse('$baseUrl/api/orders/notifications/$id');
+    final res = await http.delete(url);
+    if (res.statusCode != 200 && res.statusCode != 204) {
+      // Allow 404 as already removed on server
+      if (res.statusCode != 404) {
+        throw Exception('Lỗi xóa thông báo: ${res.statusCode}');
+      }
+    }
+  }
+
+  Future<void> clearNotifications() async {
+    final url = Uri.parse('$baseUrl/api/orders/notifications');
+    final res = await http.delete(url);
+    if (res.statusCode != 200 && res.statusCode != 204) {
+      throw Exception('Lỗi xóa tất cả thông báo: ${res.statusCode}');
+    }
   }
 
   // User Management APIs

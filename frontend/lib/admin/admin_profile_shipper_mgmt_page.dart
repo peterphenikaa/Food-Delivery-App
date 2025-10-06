@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'admin_api.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AdminShipperManagementPage extends StatefulWidget {
   const AdminShipperManagementPage({super.key});
@@ -96,6 +98,18 @@ class _AdminShipperManagementPageState extends State<AdminShipperManagementPage>
         elevation: 0,
         title: const Text('Quản lý tài khoản shipper', style: TextStyle(color: Colors.black)),
         iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final created = await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => _CreateShipperPage(api: _api)),
+              );
+              if (created == true) _loadData();
+            },
+            icon: const Icon(Icons.add_circle_outline, color: Colors.deepOrange),
+            tooltip: 'Thêm shipper',
+          )
+        ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -515,6 +529,183 @@ class _EditShipperPageState extends State<_EditShipperPage> {
         ),
       ),
     );
+  }
+}
+
+class _CreateShipperPage extends StatefulWidget {
+  final AdminApi api;
+  const _CreateShipperPage({required this.api});
+
+  @override
+  State<_CreateShipperPage> createState() => _CreateShipperPageState();
+}
+
+class _CreateShipperPageState extends State<_CreateShipperPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _houseNumberController = TextEditingController();
+  final _wardController = TextEditingController();
+  final _cityController = TextEditingController();
+  bool saving = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _houseNumberController.dispose();
+    _wardController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _create() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => saving = true);
+    try {
+      final body = {
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phoneNumber': _phoneController.text.trim(),
+        'password': _passwordController.text,
+        'role': 'shipper',
+        'address': {
+          'houseNumber': _houseNumberController.text.trim(),
+          'ward': _wardController.text.trim(),
+          'city': _cityController.text.trim(),
+        },
+      };
+      // Tái sử dụng endpoint tạo user (nếu backend chưa có, tạm dùng update với id mới sẽ fail).
+      // Ở đây dùng createFood pattern; nếu bạn có /api/users (POST) hãy chuyển sang AdminApi.createUser.
+      final uri = Uri.parse('${widget.api.baseUrl}/api/users');
+      final res = await AdminHttp.post(uri, body);
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã tạo shipper')), 
+        );
+        Navigator.of(context).pop(true);
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi tạo shipper: ${res.statusCode}')), 
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi tạo shipper: $e')), 
+      );
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F3F6),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('Thêm shipper', style: TextStyle(color: Colors.black)),
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          TextButton(
+            onPressed: saving ? null : _create,
+            child: saving
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Text('Tạo'),
+          )
+        ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Thông tin cơ bản', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Tên', border: OutlineInputBorder()),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập tên' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                      validator: (v) => (v == null || !v.contains('@')) ? 'Email không hợp lệ' : null,
+                    ),
+                    const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(labelText: 'Mật khẩu', border: OutlineInputBorder()),
+                    obscureText: true,
+                    validator: (v) => (v == null || v.length < 6) ? 'Tối thiểu 6 ký tự' : null,
+                  ),
+                  const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(labelText: 'Số điện thoại', border: OutlineInputBorder()),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập SĐT' : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Địa chỉ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _houseNumberController,
+                      decoration: const InputDecoration(labelText: 'Số nhà', border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _wardController,
+                      decoration: const InputDecoration(labelText: 'Phường/Xã', border: OutlineInputBorder()),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _cityController,
+                      decoration: const InputDecoration(labelText: 'Thành phố', border: OutlineInputBorder()),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Lightweight HTTP helper (local to this page)
+class AdminHttp {
+  static Future<http.Response> post(Uri uri, Map<String, dynamic> body) {
+    return http.post(uri, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
   }
 }
 

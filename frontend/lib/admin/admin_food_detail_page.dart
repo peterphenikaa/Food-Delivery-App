@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_api.dart';
+import 'dart:convert';
 import 'admin_add_food_page.dart';
 
 class AdminFoodDetailPage extends StatefulWidget {
@@ -37,9 +38,15 @@ class _AdminFoodDetailPageState extends State<AdminFoodDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final image = (food['image'] != null && (food['image'] as String).isNotEmpty)
-        ? 'assets/${food['image']}'
-        : 'assets/homepageUser/restaurant_img1.jpg';
+    String _normalizeImage(dynamic v) {
+      final s = (v ?? '').toString();
+      if (s.isEmpty) return 'assets/homepageUser/restaurant_img1.jpg';
+      String path = s.replaceFirst('homepageuser/', 'homepageUser/');
+      if (path.startsWith('http') || path.startsWith('data:')) return path;
+      // Use DB path as-is for assets (already includes 'assets/...')
+      return path;
+    }
+    final image = _normalizeImage(food['image']);
     final name = (food['name'] ?? '').toString();
     final price = (food['price'] ?? 0) as num;
     final ingredients = (food['ingredients'] as List?)?.map((e) => e.toString()).toList() ?? [];
@@ -101,17 +108,21 @@ class _AdminFoodDetailPageState extends State<AdminFoodDetailPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              image,
-              height: 220,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: 220,
-                color: Colors.grey[300],
-                alignment: Alignment.center,
-                child: const Icon(Icons.broken_image, color: Colors.grey),
-              ),
-            ),
+            child: image.startsWith('http')
+                ? Image.network(
+                    image,
+                    height: 220,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _fallbackBox(),
+                  )
+                : image.startsWith('data:')
+                    ? _base64Image(image)
+                    : Image.asset(
+                        image,
+                        height: 220,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _fallbackBox(),
+                      ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -151,6 +162,20 @@ class _AdminFoodDetailPageState extends State<AdminFoodDetailPage> {
         ],
       ),
     );
+  }
+  Widget _fallbackBox() => Container(
+        height: 220,
+        color: Colors.grey[300],
+        alignment: Alignment.center,
+        child: const Icon(Icons.broken_image, color: Colors.grey),
+      );
+  Widget _base64Image(String dataUrl) {
+    try {
+      final b64 = dataUrl.split(',').last;
+      return Image.memory(base64Decode(b64), height: 220, fit: BoxFit.cover);
+    } catch (_) {
+      return _fallbackBox();
+    }
   }
 }
 

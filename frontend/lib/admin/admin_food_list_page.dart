@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_api.dart';
+import 'dart:convert';
 import 'admin_add_food_page.dart';
 import 'admin_food_detail_page.dart';
 
@@ -24,6 +25,23 @@ class _AdminFoodListPageState extends State<AdminFoodListPage>
     super.initState();
     _api = AdminApi.fromDefaults();
     _loadFoods(updateCategories: true);
+  }
+
+  Widget _fallbackBox() => Container(
+        width: 72,
+        height: 72,
+        color: Colors.grey[300],
+        alignment: Alignment.center,
+        child: const Icon(Icons.fastfood, color: Colors.orange),
+      );
+
+  Widget _base64Image(String dataUrl) {
+    try {
+      final b64 = dataUrl.split(',').last;
+      return Image.memory(base64Decode(b64), width: 72, height: 72, fit: BoxFit.cover);
+    } catch (_) {
+      return _fallbackBox();
+    }
   }
 
   Future<void> _loadFoods({String? category, bool updateCategories = false}) async {
@@ -61,6 +79,17 @@ class _AdminFoodListPageState extends State<AdminFoodListPage>
     } finally {
       setState(() => loading = false);
     }
+  }
+
+  String _normalizeImage(dynamic v) {
+    final s = (v ?? '').toString();
+    if (s.isEmpty) return 'assets/homepageUser/restaurant_img1.jpg';
+    // Fix common casing issue from DB
+    String path = s.replaceFirst('homepageuser/', 'homepageUser/');
+    // If the backend gives http/base64, use it directly
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    // Otherwise, use the path as-is (DB already stores asset paths like assets/homepageUser/..)
+    return path;
   }
 
   @override
@@ -116,9 +145,7 @@ class _AdminFoodListPageState extends State<AdminFoodListPage>
                         itemBuilder: (context, index) {
                           final f = foods[index];
                           final title = (f['name'] ?? '').toString();
-                          final image = (f['image'] != null && (f['image'] as String).isNotEmpty)
-                              ? 'assets/${f['image']}'
-                              : 'assets/homepageUser/restaurant_img1.jpg';
+                          final image = _normalizeImage(f['image']);
                           final price = (f['price'] ?? 0) as num;
                           final category = (f['category'] ?? '').toString();
                           final rating = (f['rating'] ?? 0).toString();
@@ -223,19 +250,13 @@ class _FoodListTile extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              image,
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 72,
-                height: 72,
-                color: Colors.grey[300],
-                alignment: Alignment.center,
-                child: const Icon(Icons.fastfood, color: Colors.orange),
-              ),
-            ),
+            child: (image.startsWith('http'))
+                ? Image.network(image, width: 72, height: 72, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _fallbackBox())
+                : (image.startsWith('data:'))
+                    ? _base64Image(image)
+                    : Image.asset(image, width: 72, height: 72, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _fallbackBox()),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -298,6 +319,23 @@ class _FoodListTile extends StatelessWidget {
       ),
     ),
     );
+  }
+
+  Widget _fallbackBox() => Container(
+        width: 72,
+        height: 72,
+        color: Colors.grey[300],
+        alignment: Alignment.center,
+        child: const Icon(Icons.fastfood, color: Colors.orange),
+      );
+
+  Widget _base64Image(String dataUrl) {
+    try {
+      final b64 = dataUrl.split(',').last;
+      return Image.memory(base64Decode(b64), width: 72, height: 72, fit: BoxFit.cover);
+    } catch (_) {
+      return _fallbackBox();
+    }
   }
 }
 

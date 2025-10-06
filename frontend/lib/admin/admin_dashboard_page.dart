@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:async';
+import 'admin_profile_order_count_page.dart';
 import 'admin_api.dart';
 import 'admin_food_list_page.dart';
 import 'admin_add_food_page.dart';
 import 'admin_food_detail_page.dart';
 import 'admin_notifications_page.dart';
+import 'admin_revenue_detail_page.dart';
 import 'admin_profile_page.dart';
+import 'admin_reviews_detail_page.dart';
 
 String formatCurrencyVND(double v) {
   final s = v.toStringAsFixed(0);
@@ -31,6 +36,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   String? _selectedRestaurantId;
   String _filter = 'Hàng ngày';
   late final AdminApi _api;
+  Timer? _refreshTimer;
 
   int runningOrders = 0;
   int orderRequests = 0;
@@ -77,18 +83,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             Row(
               children: [
                 Expanded(
-                  child: _StatCard(
-                    value: runningOrders.toString().padLeft(2, '0'),
-                    label: 'Đơn đang chờ',
-                    icon: Icons.local_shipping_outlined,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const AdminOrderCountPage()),
+                      );
+                    },
+                    child: _StatCard(
+                      value: runningOrders.toString().padLeft(2, '0'),
+                      label: 'Đơn đang chờ',
+                      icon: Icons.local_shipping_outlined,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _StatCard(
-                    value: orderRequests.toString().padLeft(2, '0'),
-                    label: 'Yêu cầu đơn hàng',
-                    icon: Icons.pending_actions_outlined,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const AdminOrderCountPage()),
+                      );
+                    },
+                    child: _StatCard(
+                      value: orderRequests.toString().padLeft(2, '0'),
+                      label: 'Yêu cầu đơn hàng',
+                      icon: Icons.pending_actions_outlined,
+                    ),
                   ),
                 ),
               ],
@@ -106,7 +126,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               tooltips: tooltipsDyn,
             ),
             const SizedBox(height: 16),
-            _ReviewsPreview(rating: avgRestaurantRating, totalReviews: totalRestaurantReviews),
+            _ReviewsPreview(
+              rating: avgRestaurantRating,
+              totalReviews: totalRestaurantReviews,
+              onViewAll: () {
+                if (_selectedRestaurantId == null) return;
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AdminReviewsDetailPage(
+                      restaurantId: _selectedRestaurantId!,
+                      restaurantName: _selectedLocation,
+                    ),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 16),
             _PopularItemsSection(restaurantId: _selectedRestaurantId),
             const SizedBox(height: 80),
@@ -138,11 +172,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   }
 
   @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _api = AdminApi.fromDefaults();
     _initDefaultRestaurant();
-    _loadRestaurantRatings();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_selectedRestaurantId != null && mounted) {
+        await Future.wait([
+          _loadCounters(),
+          _loadRevenue(),
+          _loadRestaurantRatings(),
+        ]);
+      }
+    });
   }
 
   Future<void> _initDefaultRestaurant() async {
@@ -157,6 +205,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         await Future.wait([
           _loadCounters(),
           _loadRevenue(),
+          _loadRestaurantRatings(),
         ]);
       }
     } catch (_) {}
@@ -308,7 +357,7 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          _CircleIconButton(icon: Icons.menu, onTap: () {}),
+          const _Avatar(),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -343,7 +392,6 @@ class _Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const _Avatar(),
         ],
       ),
     );
@@ -500,7 +548,11 @@ class _RevenueCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminRevenueDetailPage()),
+                  );
+                },
                 child: const Text('Xem chi tiết'),
               )
             ],
@@ -717,7 +769,8 @@ class _LineChartPainter extends CustomPainter {
 class _ReviewsPreview extends StatelessWidget {
   final double rating;
   final int totalReviews;
-  const _ReviewsPreview({required this.rating, required this.totalReviews});
+  final VoidCallback? onViewAll;
+  const _ReviewsPreview({required this.rating, required this.totalReviews, this.onViewAll});
 
   @override
   Widget build(BuildContext context) {
@@ -740,7 +793,7 @@ class _ReviewsPreview extends StatelessWidget {
           const SizedBox(width: 8),
           Text('Tổng ${totalReviews} đánh giá'),
           const Spacer(),
-          TextButton(onPressed: () {}, child: const Text('Xem tất cả đánh giá')),
+          TextButton(onPressed: onViewAll, child: const Text('Xem tất cả đánh giá')),
         ],
       ),
     );
@@ -772,7 +825,6 @@ class _PopularItemsSection extends StatelessWidget {
                       ),
                 ),
               ),
-              TextButton(onPressed: () {}, child: const Text('Xem tất cả')),
             ],
           ),
           const SizedBox(height: 8),
@@ -846,9 +898,15 @@ class _TopFoodsListState extends State<_TopFoodsList> {
         itemBuilder: (context, index) {
           final f = foods[index];
           final title = (f['name'] ?? '').toString();
-          final image = (f['image'] != null && (f['image'] as String).isNotEmpty)
-              ? 'assets/${f['image']}'
-              : 'assets/homepageUser/restaurant_img1.jpg';
+          String _normalizeImage(dynamic v) {
+            final s = (v ?? '').toString();
+            if (s.isEmpty) return 'assets/homepageUser/restaurant_img1.jpg';
+            String path = s.replaceFirst('homepageuser/', 'homepageUser/');
+            if (path.startsWith('http') || path.startsWith('data:')) return path;
+              // Use asset path as stored in DB (already includes assets/...)
+              return path;
+          }
+          final image = _normalizeImage(f['image']);
           final qty = (f['totalQuantity'] ?? 0) as int;
           return GestureDetector(
             onTap: () async {
@@ -892,18 +950,21 @@ class _PopularItemCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Image.asset(
-              image,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stack) {
-                return Container(
-                  color: const Color(0xFFF5F6FA),
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
-                );
-              },
-            ),
+            child: image.startsWith('http')
+                ? Image.network(
+                    image,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stack) => _imgFallback(),
+                  )
+                : image.startsWith('data:')
+                    ? _base64Image(image)
+                    : Image.asset(
+                        image,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stack) => _imgFallback(),
+                      ),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -917,6 +978,21 @@ class _PopularItemCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _imgFallback() => Container(
+        color: const Color(0xFFF5F6FA),
+        alignment: Alignment.center,
+        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+      );
+
+  Widget _base64Image(String dataUrl) {
+    try {
+      final b64 = dataUrl.split(',').last;
+      return Image.memory(base64Decode(b64), width: double.infinity, fit: BoxFit.cover);
+    } catch (_) {
+      return _imgFallback();
+    }
   }
 }
 
