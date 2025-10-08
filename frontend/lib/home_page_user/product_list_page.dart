@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'product_detail_page.dart';
 import 'cart_provider.dart';
 import 'cart_item.dart';
+import 'cart_page.dart';
 import 'search_page.dart';
 import 'dart:convert';
 
@@ -631,6 +632,18 @@ class _ProductCard extends StatelessWidget {
                                       ),
                                       backgroundColor: Colors.green,
                                       duration: Duration(seconds: 2),
+                                      action: SnackBarAction(
+                                        label: 'Xem giỏ hàng',
+                                        textColor: Colors.white,
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CartPage(),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ),
                                   );
                                 }

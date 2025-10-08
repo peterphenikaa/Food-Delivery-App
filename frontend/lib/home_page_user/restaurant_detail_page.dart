@@ -216,13 +216,23 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     });
 
     try {
-      // Get restaurant ID - Use hardcoded ID for now
-      final String restaurantId = '68e0f8212a8b4f62ede92c97'; // The Pizza Place
+      // Get restaurant ID from the passed restaurant parameter
+      final String restaurantId = widget.restaurant['_id'] ?? widget.restaurant['id'] ?? '';
+      
+      if (restaurantId.isEmpty) {
+        print('[RestaurantDetailPage] No restaurant ID found');
+        setState(() {
+          foods = [];
+          isLoading = false;
+        });
+        return;
+      }
       
       final baseUrl = 'http://localhost:3000';
       final url = Uri.parse('$baseUrl/api/foods?restaurantId=$restaurantId');
       
       print('[RestaurantDetailPage] Loading foods for restaurant: $restaurantId');
+      print('[RestaurantDetailPage] Restaurant name: ${widget.restaurant['name']}');
       print('[RestaurantDetailPage] URL: $url');
       
       final response = await http.get(url);
