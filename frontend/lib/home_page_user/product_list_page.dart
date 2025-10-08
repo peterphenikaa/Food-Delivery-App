@@ -457,26 +457,23 @@ class _ProductCard extends StatelessWidget {
           children: [
             // Image Container
             Container(
-              height: 130,
+              height: 140,
               decoration: BoxDecoration(
-                color: Color(0xFFFFF5E1),
+                color: Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
               ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: product['image'] != null
-                        ? Image.asset(
-                            '${product['image']}',
-                            height: 100,
-                            fit: BoxFit.contain,
-                          )
-                        : Icon(Icons.restaurant, size: 60, color: Colors.grey),
-                  ),
-                ],
+              child: Center(
+                child: product['image'] != null
+                    ? Image.asset(
+                        '${product['image']}',
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                      )
+                    : Icon(Icons.restaurant, size: 60, color: Colors.grey),
               ),
             ),
 
@@ -515,11 +512,11 @@ class _ProductCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '\$$price',
+                          'đ$price',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
-                            color: Colors.black87,
+                            color: Color(0xFFFFA726),
                           ),
                         ),
                         Consumer<CartProvider>(

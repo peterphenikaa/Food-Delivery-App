@@ -80,7 +80,7 @@ class _SearchPageState extends State<SearchPage> {
   final List<Map<String, dynamic>> suggestedRestaurants = [
     {
       "name": "The Pizza Place",
-      "image": "homepageUser/pizaa_place.jpg",
+      "image": "homepageUser/pizza_place.jpg",
       "rating": 4.8,
     },
     {
