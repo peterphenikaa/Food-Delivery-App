@@ -39,10 +39,10 @@ class _LoginPageState extends State<LoginPage> {
                 onPageChanged: (i) => setState(() => _index = i),
                 children: [
                   OnboardingCard(
-                    title: 'Tất cả món yêu thích',
+                    title: 'All your favorites',
                     subtitle:
-                        'Tìm tất cả món ăn yêu thích của bạn ở một nơi, bạn chỉ cần đặt hàng, chúng tôi sẽ lo phần còn lại',
-                    buttonText: 'TIẾP THEO',
+                        'Get all your loved foods in one place, you just place the order we do the rest',
+                    buttonText: 'NEXT',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     onSkipPressed: _skip,
@@ -58,10 +58,10 @@ class _LoginPageState extends State<LoginPage> {
                     totalPages: 3,
                   ),
                   OnboardingCard(
-                    title: 'Đặt món từ đầu bếp đã chọn',
+                    title: 'Order from chosen chef',
                     subtitle:
-                        'Tìm tất cả món ăn yêu thích của bạn ở một nơi, bạn chỉ cần đặt hàng, chúng tôi sẽ lo phần còn lại',
-                    buttonText: 'TIẾP THEO',
+                        'Get all your loved foods in one place, you just place the order we do the rest',
+                    buttonText: 'NEXT',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     onSkipPressed: _skip,
@@ -77,10 +77,10 @@ class _LoginPageState extends State<LoginPage> {
                     totalPages: 3,
                   ),
                   OnboardingCard(
-                    title: 'Ưu đãi giao hàng miễn phí',
+                    title: 'Free delivery offers',
                     subtitle:
-                        'Tìm tất cả món ăn yêu thích của bạn ở một nơi, bạn chỉ cần đặt hàng, chúng tôi sẽ lo phần còn lại',
-                    buttonText: 'BẮT ĐẦU',
+                        'Get all your loved foods in one place, you just place the order we do the rest',
+                    buttonText: 'GET STARTED',
                     buttonColor: Colors.orange,
                     onButtonPressed: _next,
                     onSkipPressed: _skip,

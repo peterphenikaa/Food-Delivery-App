@@ -216,43 +216,23 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     });
 
     try {
-      // Get restaurant ID from the passed restaurant parameter
-      final String restaurantId = widget.restaurant['_id'] ?? widget.restaurant['id'] ?? '';
-      
-      if (restaurantId.isEmpty) {
-        print('[RestaurantDetailPage] No restaurant ID found');
-        setState(() {
-          foods = [];
-          isLoading = false;
-        });
-        return;
-      }
-      
       final baseUrl = 'http://localhost:3000';
-      final url = Uri.parse('$baseUrl/api/foods?restaurantId=$restaurantId');
-      
-      print('[RestaurantDetailPage] Loading foods for restaurant: $restaurantId');
-      print('[RestaurantDetailPage] Restaurant name: ${widget.restaurant['name']}');
-      print('[RestaurantDetailPage] URL: $url');
-      
+      final url = Uri.parse('$baseUrl/api/foods');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('[RestaurantDetailPage] Loaded ${data.length} foods');
         setState(() {
           foods = List<Map<String, dynamic>>.from(data);
           isLoading = false;
         });
       } else {
-        print('[RestaurantDetailPage] Failed to load foods: ${response.statusCode}');
         setState(() {
           foods = [];
           isLoading = false;
         });
       }
     } catch (e) {
-      print('[RestaurantDetailPage] Error loading foods: $e');
       setState(() {
         foods = [];
         isLoading = false;
@@ -540,7 +520,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            childAspectRatio: 0.7,
+                            childAspectRatio: 0.8,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                           ),
@@ -754,7 +734,7 @@ class _FoodCard extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -762,15 +742,15 @@ class _FoodCard extends StatelessWidget {
                       food['name'] ?? 'Unknown',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                        fontSize: 14,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       food['restaurant'] ?? 'Restaurant',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -778,18 +758,14 @@ class _FoodCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Text(
-                            '₫${food['price'] ?? 0}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                              color: Colors.orange,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          '₫${food['price'] ?? 0}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: Colors.orange,
                           ),
                         ),
-                        const SizedBox(width: 4),
                         Consumer<CartProvider>(
                           builder: (context, cartProvider, child) {
                             final isInCart = cartProvider.isItemInCart(
@@ -831,8 +807,8 @@ class _FoodCard extends StatelessWidget {
                                 }
                               },
                               child: Container(
-                                width: 28,
-                                height: 28,
+                                width: 32,
+                                height: 32,
                                 decoration: BoxDecoration(
                                   color: isInCart
                                       ? Colors.green
@@ -842,7 +818,7 @@ class _FoodCard extends StatelessWidget {
                                 child: Icon(
                                   isInCart ? Icons.check : Icons.add,
                                   color: Colors.white,
-                                  size: 16,
+                                  size: 18,
                                 ),
                               ),
                             );

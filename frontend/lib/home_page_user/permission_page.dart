@@ -158,16 +158,14 @@ class _PermissionPageState extends State<PermissionPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey[100],
-                ),
-                child: Icon(
-                  Icons.location_on,
-                  size: 64,
-                  color: Colors.grey[400],
+                width: 240,
+                height: 240,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'introduction_screen/map.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               SizedBox(height: 30),
