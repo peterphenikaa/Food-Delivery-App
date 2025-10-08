@@ -1,13 +1,32 @@
-
-frontend/build/
+# ========================
+# FLUTTER / DART SETTINGS
+# ========================
 frontend/.dart_tool/
+frontend/build/
+frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/pubspec.lock
+*.flutter-plugins
+*.iml
 
-# Node modules
-node_modules/
+# Android / iOS build output (nếu có mobile app)
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/ios/Pods/
+frontend/ios/Flutter/Flutter.framework
+frontend/ios/Flutter/App.framework
+frontend/ios/Flutter/Generated.xcconfig
+frontend/ios/Flutter/ephemeral/
 
-# Environment files
-.env
+# ========================
+# NODE.JS / BACKEND SETTINGS
+# ========================
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.npm/
+backend/package-lock.json
 
 # Logs
 logs
@@ -16,9 +35,18 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# OS files
+# ========================
+# OS / IDE FILES
+# ========================
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
+*.swp
 
-# Build output
-dist/
+# ========================
+# TEST / TEMP FILES
+# ========================
+coverage/
+temp/
+tmp/
