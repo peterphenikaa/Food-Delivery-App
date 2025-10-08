@@ -150,9 +150,3 @@ flutter run -d ios
 
 ```
 
-## 📊 Báo cáo và Demo
-
-### 📋 Báo cáo chi tiết
-Xem báo cáo đầy đủ về dự án Food Delivery App tại:
-**[📄 Báo cáo bài tập lớn Kĩ Thuật Phần Mềm - Food Delivery App](https://docs.google.com/document/d/1UKzzk9Ut9GU6Quh3QzpFtDKEdpyo0j8d/edit)**
-
