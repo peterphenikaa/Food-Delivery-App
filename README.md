@@ -147,6 +147,3 @@ flutter run -d ios
 - Chat realtime giữa khách hàng và shipper
 - Thông báo trạng thái đơn hàng
 - Cập nhật vị trí shipper trên bản đồ
-
-```
-
