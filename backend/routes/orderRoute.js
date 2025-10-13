@@ -79,16 +79,34 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { status, shipperId, restaurantId } = req.query;
-    const filter = {};
-    if (status) filter.status = status;
-    if (shipperId) filter.shipperId = shipperId;
+    const baseFilter = {};
+    if (status) baseFilter.status = status;
+    if (shipperId) baseFilter.shipperId = shipperId;
+
+    // If restaurantId is provided, orders collection doesn't store restaurantId directly.
+    // We need to fetch and filter by items' food.restaurantId similar to other endpoints.
     if (restaurantId) {
-      try {
-        filter.restaurantId = new mongoose.Types.ObjectId(restaurantId);
-      } catch (_) {}
+      const all = await Order.find(baseFilter).sort({ createdAt: -1 });
+      const out = [];
+      for (const order of all) {
+        if (!order.items || order.items.length === 0) continue;
+        let belongs = false;
+        for (const item of order.items) {
+          if (!item.foodId) continue;
+          try {
+            const food = await Food.findById(item.foodId).select('restaurantId');
+            if (food && food.restaurantId && food.restaurantId.toString() === restaurantId) {
+              belongs = true;
+              break;
+            }
+          } catch (_) {}
+        }
+        if (belongs) out.push(order);
+      }
+      return res.json(out);
     }
-    
-    const orders = await Order.find(filter).sort({ createdAt: -1 });
+
+    const orders = await Order.find(baseFilter).sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
     console.error('Error fetching orders:', err);

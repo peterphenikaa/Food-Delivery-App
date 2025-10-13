@@ -13,20 +13,18 @@ class _AdminNotificationsPageState extends State<AdminNotificationsPage> {
   late final AdminApi _api;
   bool loading = true;
   List<Map<String, dynamic>> items = [];
-  Timer? _pollTimer;
+  // Removed auto-refresh timer per request
 
   @override
   void initState() {
     super.initState();
     _api = AdminApi.fromDefaults();
     _load();
-    // Auto-refresh notifications every 5 seconds
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _load());
   }
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
+    // No periodic refresh to cancel
     super.dispose();
   }
 
