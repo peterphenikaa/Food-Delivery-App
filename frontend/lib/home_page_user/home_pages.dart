@@ -12,6 +12,7 @@ import 'cart_page.dart';
 import 'restaurant_detail_page.dart';
 import 'address_provider.dart';
 import 'edit_address_page.dart';
+import '../auth/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -516,6 +517,68 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showLogoutDialog(context),
+        backgroundColor: Colors.blue,
+        child: const Icon(
+          Icons.logout,
+          color: Colors.white,
+          size: 24,
+        ),
+        elevation: 4,
+        mini: false,
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận đăng xuất'),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất không?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logout(context);
+              },
+              child: const Text(
+                'Đăng xuất',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout(BuildContext context) {
+    // Clear user info
+    Provider.of<AuthProvider>(context, listen: false).clear();
+
+    // Clear cart
+    Provider.of<CartProvider>(context, listen: false).clearCart();
+
+    // Navigate to login
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    );
+
+    // Toast
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã đăng xuất thành công'),
+        backgroundColor: Colors.green,
       ),
     );
   }

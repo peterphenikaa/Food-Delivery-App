@@ -85,6 +85,31 @@ router.get("/users/:id", async (req, res) => {
   }
 });
 
+// PUT /api/auth/users/:id -> update basic profile fields
+router.put("/users/:id", async (req, res) => {
+  try {
+    const updates = {};
+    const allowed = ["name", "email", "phoneNumber", "address"];
+    for (const key of allowed) {
+      if (req.body && Object.prototype.hasOwnProperty.call(req.body, key)) {
+        updates[key] = req.body[key];
+      }
+    }
+    const updated = await Login.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (!updated) return res.status(404).json({ error: "User not found" });
+    res.json({
+      id: updated._id,
+      email: updated.email,
+      name: updated.name,
+      phoneNumber: updated.phoneNumber,
+      address: updated.address,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // GET /api/auth/profile -> return the first user (for demo when no auth persisted)
 router.get("/profile", async (req, res) => {
   try {

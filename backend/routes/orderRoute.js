@@ -108,6 +108,29 @@ router.get('/notifications', async (req, res) => {
   }
 });
 
+// DELETE /api/orders/notifications - clear all notifications
+router.delete('/notifications', async (req, res) => {
+  try {
+    await Notification.deleteMany({});
+    res.status(204).send();
+  } catch (err) {
+    console.error('[NOTIFY] Failed to clear notifications:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/orders/notifications/:id - delete single notification
+router.delete('/notifications/:id', async (req, res) => {
+  try {
+    const deleted = await Notification.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Not found' });
+    res.status(204).send();
+  } catch (err) {
+    console.error('[NOTIFY] Failed to delete notification:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Chat messages endpoints (must come BEFORE '/:id')
 // GET /api/orders/:id/messages?since=ISO
 router.get('/:id/messages', async (req, res) => {
@@ -287,14 +310,16 @@ router.get("/stats/counters", async (req, res) => {
         }
       }
       
-      // "Đơn đang chờ" (trong dashboard) chỉ tính các đơn ĐANG CHUẨN BỊ tại nhà hàng
-      const running = filteredOrders.filter(order => 
-        order.status === 'ASSIGNED'
-      ).length;
+      // Đơn đang chạy: chỉ tính ASSIGNED theo yêu cầu dashboard admin
+      const running = filteredOrders.filter(order => {
+        const s = (order.status || '').toUpperCase();
+        return s === 'ASSIGNED';
+      }).length;
       
-      const requests = filteredOrders.filter(order => 
-        order.status === 'PENDING'
-      ).length;
+      const requests = filteredOrders.filter(order => {
+        const s = (order.status || '').toUpperCase();
+        return s === 'PENDING';
+      }).length;
       
       return res.json({ running, requests });
     }

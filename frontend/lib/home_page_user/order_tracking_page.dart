@@ -103,7 +103,10 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     final status = order?['status']?.toString() ?? 'PENDING';
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text('Theo dõi đơn hàng', style: TextStyle(color: Colors.black)),
